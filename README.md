@@ -9,7 +9,7 @@ Il progetto consiste nella realizzazione di un client Flickr che deve permettere
 In ogni caso, il risultato dovrà essere la visualizzazione di una lista di titoli di immagini, con alla loro sinistra una preview dell'immagine (75x75 pixel).
 Ciascun elemento della lista dovrà reagire ai seguenti eventi:
 
-1) click semplice: si dovrà visualizzare l'immagine ad alta risoluzione, con sotto gli ultimi commenti inseriti per quell'immagine (VEDERE LE API PER ANDARE A PRENDERE I COMMENTI)
+1) click semplice: si dovrà visualizzare l'immagine ad alta risoluzione, con sotto gli ultimi commenti inseriti per quell'immagine
 2) click lungo: si aprirà un menu contestuale che permetterà di effettuare le seguenti due operazioni:
         a) condividere l'immagine ad alta risoluzione con altre app disponibili alla condivisione (es: WhatsApp, Telegram, Gmail)
         b) cercare le ultime immagini caricate dallo stesso autore
