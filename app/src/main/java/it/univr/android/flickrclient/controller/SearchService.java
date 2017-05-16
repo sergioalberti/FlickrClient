@@ -9,15 +9,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.WorkerThread;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
@@ -65,30 +75,34 @@ public class SearchService extends IntentService {
             URL url = new URL(CONNECTION_URL);
             URLConnection conn = url.openConnection();
 
-            //necessario aprire e chiudere il buffer
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
             String line;
-            Pattern titlePattern = Pattern.compile("title=\"([^\"]*)\"", Pattern.DOTALL);
-            Pattern URLPattern = Pattern.compile("url_z=\"([^\"]*)\"", Pattern.DOTALL);
-            Matcher titleMatcher = null, URLMatcher = null;
+            String xml = "";
 
-            while ((line = in.readLine()) != null){
-                if(line.contains("<photo id")){
-                    titleMatcher = titlePattern.matcher(line);
-                    URLMatcher =  URLPattern.matcher(line);
-
-                    if(titleMatcher.find() && URLMatcher.find()) {
-                        response.add(new Model.FlickrImage(titleMatcher.group(1), URLMatcher.group(1)));
-                        counter++;
-                    }
-                }
-            }
-
+            while ((line = in.readLine()) != null)
+                xml += line;
             if (in != null)
                 in.close();
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            InputSource is = new InputSource(new StringReader(xml));
+            Document document = builder.parse(is);
+            NodeList photos = document.getElementsByTagName("photo");
+            for (int i = 0; i < photos.getLength(); i++){
+                NamedNodeMap nnm = photos.item(i).getAttributes();
+                Node title = nnm.getNamedItem("title");
+                Node url_z = nnm.getNamedItem("url_z");
+                if (title != null && url_z != null)
+                    response.add(new Model.FlickrImage(title.getTextContent(), url_z.getTextContent()));
+            }
         }
-        catch(IOException e){
+        catch(IOException e ){
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
             e.printStackTrace();
         }
 
