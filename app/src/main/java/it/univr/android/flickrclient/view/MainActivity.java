@@ -1,7 +1,9 @@
-package it.univr.android.flickrclient;
+package it.univr.android.flickrclient.view;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import it.univr.android.flickrclient.R;
 
 public class MainActivity extends AppCompatActivity {
 

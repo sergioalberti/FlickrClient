@@ -31,7 +31,7 @@ public class MVC {
         views.add(v);
     }
 
-    public void remove(View v){
+    public void unregister(View v){
         views.remove(v);
     }
 

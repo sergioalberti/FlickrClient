@@ -6,11 +6,8 @@ package it.univr.android.flickrclient.view;
 
 import android.support.annotation.UiThread;
 
-public interface View {
+public interface AbstractFragment {
 
     @UiThread
     void onModelChanged();
-
-    @UiThread
-    void showSearchResults();
 }

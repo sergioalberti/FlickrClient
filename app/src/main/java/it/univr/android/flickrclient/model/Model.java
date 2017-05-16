@@ -4,7 +4,10 @@ package it.univr.android.flickrclient.model;
  * Created by user on 5/16/17.
  */
 
+import android.support.annotation.UiThread;
+
 import it.univr.android.flickrclient.MVC;
+import it.univr.android.flickrclient.view.View;
 
 public class Model {
     private MVC mvc;
@@ -34,5 +37,15 @@ public class Model {
 
     public void setMVC(MVC mvc){
         this.mvc = mvc;
+    }
+
+    public void storeSearchResults(FlickrImage[] result){
+        imageList = result;
+        mvc.forEachView(View::onModelChanged);
+    }
+
+    @UiThread
+    public FlickrImage[] getSearchResults(){
+        return imageList;
     }
 }

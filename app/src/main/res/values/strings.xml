@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">FlickrClient</string>
+    <string name="search_key_hint">insert search key</string>
+    <string name="button_search">search</string>
 </resources>
