@@ -35,7 +35,8 @@ import it.univr.android.flickrclient.model.Model;
 
 public class SearchService extends IntentService {
     private static final String ACTION_FLICKR_SEARCH = "search";
-    private static final String SEARCH_KEY = "search_key";
+    private static final String SAVED_KEY = "search_key";
+    private static final String API_KEY = "be4922ffb4ded82d452af0477842bdba";
 
     public SearchService(){
         super("search service");
@@ -44,7 +45,7 @@ public class SearchService extends IntentService {
     static void doFlickrSearch(Context context, String key){
         Intent intent = new Intent(context, SearchService.class);
         intent.setAction(ACTION_FLICKR_SEARCH);
-        intent.putExtra(SEARCH_KEY, key);
+        intent.putExtra(SAVED_KEY, key);
 
         context.startService(intent);
     }
@@ -53,10 +54,11 @@ public class SearchService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         switch(intent.getAction()){
             case ACTION_FLICKR_SEARCH:
-                String searchKey = (String) intent.getSerializableExtra(SEARCH_KEY);
+                String searchKey = (String) intent.getSerializableExtra(SAVED_KEY);
                 Model.FlickrImage[] result = flickrSearch(searchKey);
                 MVC mvc = ((FlickrApplication) getApplication()).getMvc();
                 mvc.model.storeSearchResults(result);
+                mvc.controller.callThumbTask(result);
                 break;
         }
     }
@@ -69,7 +71,7 @@ public class SearchService extends IntentService {
         try {
             String key = URLEncoder.encode(searchKey, "UTF-8");
             String CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr.\n" +
-                    "photos.search&api_key=be4922ffb4ded82d452af0477842bdba&text=" + key + "&extras=url_z,\n" +
+                    "photos.search&api_key=" + API_KEY + "&text=" + key + "&extras=url_z,url_s,\n" +
                     "&per_page=50";
 
             URL url = new URL(CONNECTION_URL);
@@ -94,8 +96,9 @@ public class SearchService extends IntentService {
                 NamedNodeMap nnm = photos.item(i).getAttributes();
                 Node title = nnm.getNamedItem("title");
                 Node url_z = nnm.getNamedItem("url_z");
-                if (title != null && url_z != null)
-                    response.add(new Model.FlickrImage(title.getTextContent(), url_z.getTextContent()));
+                Node url_s = nnm.getNamedItem("url_s");
+                if (title != null && url_z != null && url_s != null)
+                    response.add(new Model.FlickrImage(title.getTextContent(), url_z.getTextContent(), url_s.getTextContent()));
             }
         }
         catch(IOException e ){
