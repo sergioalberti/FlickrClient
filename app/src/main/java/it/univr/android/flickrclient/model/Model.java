@@ -6,6 +6,7 @@ package it.univr.android.flickrclient.model;
 
 import android.graphics.Bitmap;
 import android.support.annotation.UiThread;
+import android.util.Log;
 
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.view.View;
@@ -19,6 +20,7 @@ public class Model {
         private final String imageURL;
         private final String thumbURL;
         private Bitmap thumbBitmap = null;
+        static int COUNT = 0;
 
         public FlickrImage(String title, String imageURL, String thumbURL){
             this.title = title;
@@ -50,7 +52,7 @@ public class Model {
         }
 
         public boolean equals(FlickrImage other){
-            return this.toString().equals(other.toString());
+            return this.imageURL == other.imageURL;
         }
     }
 
@@ -66,7 +68,7 @@ public class Model {
     public void updateImage(FlickrImage image){
         for (int i = 0; i < imageArray.length; i++)
             if (imageArray[i].equals(image)) {
-                imageArray[i].setThumbBitmap(image.getThumbBitmap());
+                imageArray[i] = image;
                 mvc.forEachView(View::onModelChanged);
                 break;
             }

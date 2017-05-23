@@ -5,8 +5,10 @@ package it.univr.android.flickrclient.view;
  */
 
 import android.app.ListFragment;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -25,10 +27,11 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
     }
 
     private class SearchAdapter extends ArrayAdapter<Model.FlickrImage> {
-        private final Model.FlickrImage[] fi = mvc.model.getSearchResults();
+        private Model.FlickrImage[] fi = mvc.model.getSearchResults();
 
-        private SearchAdapter() {
-            super(getActivity(), R.layout.fragment_search_item, mvc.model.getSearchResults());
+        private SearchAdapter(Model.FlickrImage[] fi) {
+            super(getActivity(), R.layout.fragment_search_item, fi);
+            this.fi = fi;
         }
 
         @Override
@@ -40,13 +43,11 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                 row = inflater.inflate(R.layout.fragment_search_item, parent, false);
             }
 
-            if (fi != null) {
-                Model.FlickrImage image = fi[position];
-                if (image.getThumbBitmap() != null)
-                    ((ImageView) row.findViewById(R.id.icon)).setImageBitmap(image.getThumbBitmap());
+            Model.FlickrImage image = fi[position];
+            if (image.getThumbBitmap() != null)
+                ((ImageView) row.findViewById(R.id.image_thumb)).setImageBitmap(image.getThumbBitmap());
 
-                ((TextView) row.findViewById(R.id.image_title)).setText(image.getTitle());
-            }
+            ((TextView) row.findViewById(R.id.image_title)).setText(image.getTitle());
 
             return row;
         }
@@ -61,6 +62,8 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
     @Override @UiThread
     public void onModelChanged() {
-        setListAdapter(new SearchAdapter());
+        final Model.FlickrImage[] fi = mvc.model.getSearchResults();
+        if(fi != null)
+            setListAdapter(new SearchAdapter(fi));
     }
 }

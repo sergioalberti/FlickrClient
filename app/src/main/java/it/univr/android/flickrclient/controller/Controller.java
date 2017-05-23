@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,18 +39,18 @@ public class Controller {
 
     //@workerthread?
     public void callThumbTask(Model.FlickrImage[] images) {
-        //for(Model.FlickrImage image : images)
-        new ThumbTask().execute(images[1]);
+        for(Model.FlickrImage image : images)
+            new ThumbTask().execute(image);
     }
 
     public void showSearchResults(){
         mvc.forEachView(View::showSearchResults);
     }
 
-    private class ThumbTask extends AsyncTask<Model.FlickrImage, Void, Void> {
+    private class ThumbTask extends AsyncTask<Model.FlickrImage, Void, Model.FlickrImage> {
 
         @Override @WorkerThread
-        protected Void doInBackground(Model.FlickrImage... image) {
+        protected Model.FlickrImage doInBackground(Model.FlickrImage... image) {
             try {
                 String CONNECTION_URL = image[0].getThumbURL();
                 URL url = new URL(CONNECTION_URL);
@@ -59,27 +60,19 @@ public class Controller {
 
                 InputStream input = connection.getInputStream();
                 Bitmap thumb = BitmapFactory.decodeStream(input);
-                mvc.model.updateImage(image[0].setThumbBitmap(thumb));
+
+                return image[0].setThumbBitmap(thumb);
             }
             catch (IOException e) {
                 e.printStackTrace();
                 return null;
             }
-
-            return null;
         }
 
-        //TODO
-        //idea: mantenere il .clone() nel model
-        //e fare nel model un metodo che permette di salvare cambiamenti ad una sola immagine
-        //ogni volta che un asynctask finsice di scaricare la thumb, modifica quella singola
-        //immagine tramite il metodo nel model. questo chiama onModelChanged che aggiorna
-        //l'adapter nella view.
-//        @Override @UiThread
-//        protected void onPostExecute(BigInteger[] factors) {
-//            mvc.model.storeFactorization(n, factors);
-//            Log.d(TAG, "computed " + Arrays.toString(factors));
-//        }
+        @Override @UiThread
+        protected void onPostExecute(Model.FlickrImage im) {
+            mvc.model.updateImage(im);
+        }
 
     }
 }
