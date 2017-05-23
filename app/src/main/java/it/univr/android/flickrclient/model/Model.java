@@ -20,7 +20,6 @@ public class Model {
         private final String imageURL;
         private final String thumbURL;
         private Bitmap thumbBitmap = null;
-        static int COUNT = 0;
 
         public FlickrImage(String title, String imageURL, String thumbURL){
             this.title = title;
@@ -52,7 +51,7 @@ public class Model {
         }
 
         public boolean equals(FlickrImage other){
-            return this.imageURL == other.imageURL;
+            return this.imageURL.equals(other.imageURL);
         }
     }
 
@@ -79,5 +78,9 @@ public class Model {
         if (imageArray != null)
             return imageArray.clone();
         return null;
+    }
+
+    public void clearModel(){
+        imageArray = null;
     }
 }

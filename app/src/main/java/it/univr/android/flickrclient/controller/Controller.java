@@ -33,6 +33,7 @@ public class Controller {
 
     @UiThread
     public void callSearchService(Context context, String key){
+        mvc.model.clearModel();
         SearchService.doFlickrSearch(context, key);
 
     }
