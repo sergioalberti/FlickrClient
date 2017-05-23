@@ -38,16 +38,19 @@ public class Model {
             return thumbURL;
         }
 
-        public String toString(){
-            return title + "\n" + imageURL;
-        }
+        public String toString(){ return imageURL; }
 
-        public void setThumbBitmap(Bitmap b){
+        public FlickrImage setThumbBitmap(Bitmap b){
             this.thumbBitmap = b;
+            return this;
         }
 
         public Bitmap getThumbBitmap(){
             return thumbBitmap;
+        }
+
+        public boolean equals(FlickrImage other){
+            return this.toString().equals(other.toString());
         }
     }
 
@@ -60,9 +63,19 @@ public class Model {
         mvc.forEachView(View::onModelChanged);
     }
 
+    public void updateImage(FlickrImage image){
+        for (int i = 0; i < imageArray.length; i++)
+            if (imageArray[i].equals(image)) {
+                imageArray[i].setThumbBitmap(image.getThumbBitmap());
+                mvc.forEachView(View::onModelChanged);
+                break;
+            }
+    }
+
     @UiThread
     public FlickrImage[] getSearchResults(){
-        return imageArray;
-        //return imageArray.clone();
+        if (imageArray != null)
+            return imageArray.clone();
+        return null;
     }
 }

@@ -10,16 +10,11 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.model.Model;
@@ -64,7 +59,7 @@ public class Controller {
 
                 InputStream input = connection.getInputStream();
                 Bitmap thumb = BitmapFactory.decodeStream(input);
-                image[0].setThumbBitmap(thumb);
+                mvc.model.updateImage(image[0].setThumbBitmap(thumb));
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -80,13 +75,11 @@ public class Controller {
         //ogni volta che un asynctask finsice di scaricare la thumb, modifica quella singola
         //immagine tramite il metodo nel model. questo chiama onModelChanged che aggiorna
         //l'adapter nella view.
-
 //        @Override @UiThread
 //        protected void onPostExecute(BigInteger[] factors) {
 //            mvc.model.storeFactorization(n, factors);
 //            Log.d(TAG, "computed " + Arrays.toString(factors));
 //        }
-//
 
     }
 }

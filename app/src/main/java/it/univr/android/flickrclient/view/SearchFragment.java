@@ -7,13 +7,11 @@ package it.univr.android.flickrclient.view;
 import android.app.ListFragment;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
-import android.util.Log;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.util.Arrays;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
@@ -42,11 +40,13 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                 row = inflater.inflate(R.layout.fragment_search_item, parent, false);
             }
 
-            Model.FlickrImage image = fi[position];
-            if(image.getThumbBitmap() != null)
-                ((ImageView) row.findViewById(R.id.icon)).setImageBitmap(image.getThumbBitmap());
+            if (fi != null) {
+                Model.FlickrImage image = fi[position];
+                if (image.getThumbBitmap() != null)
+                    ((ImageView) row.findViewById(R.id.icon)).setImageBitmap(image.getThumbBitmap());
 
-            ((TextView) row.findViewById(R.id.image_title)).setText(image.getTitle());
+                ((TextView) row.findViewById(R.id.image_title)).setText(image.getTitle());
+            }
 
             return row;
         }
