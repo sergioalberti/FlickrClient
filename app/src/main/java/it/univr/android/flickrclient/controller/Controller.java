@@ -21,6 +21,8 @@ import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.model.Model;
 import it.univr.android.flickrclient.view.View;
 
+import java.util.Date;
+
 
 public class Controller {
     private final String TAG = Controller.class.getName();
@@ -41,7 +43,7 @@ public class Controller {
     //@workerthread?
     public void callThumbTask(Model.FlickrImage[] images) {
         for(Model.FlickrImage image : images)
-            new ThumbTask().execute(image);
+            new ThumbTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, image);
     }
 
     public void showSearchResults(){

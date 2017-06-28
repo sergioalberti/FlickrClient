@@ -5,17 +5,14 @@ package it.univr.android.flickrclient.view;
  */
 
 import android.app.ListFragment;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,21 +26,21 @@ import static java.util.Arrays.asList;
 
 public class SearchFragment extends ListFragment implements AbstractFragment {
     private MVC mvc;
-    private SearchAdapter sa = null;
+    private SearchAdapter searchAdapter = null;
 
     public SearchFragment(){
     }
 
     private class SearchAdapter extends ArrayAdapter<Model.FlickrImage> {
-        private List<Model.FlickrImage> fi;
+        private List<Model.FlickrImage> imagesList;
 
         private SearchAdapter(ArrayList<Model.FlickrImage> fi) {
             super(getActivity(), R.layout.fragment_search_item, fi);
-            this.fi = fi;
+            this.imagesList = fi;
         }
 
         public void updateSearchResults(){
-            fi = Arrays.asList(mvc.model.getSearchResults());
+            imagesList = Arrays.asList(mvc.model.getSearchResults());
         }
 
         @Override
@@ -55,7 +52,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                 row = inflater.inflate(R.layout.fragment_search_item, parent, false);
             }
 
-            Model.FlickrImage image = fi.get(position);
+            Model.FlickrImage image = imagesList.get(position);
             if (image.getThumbBitmap() != null)
                 ((ImageView) row.findViewById(R.id.image_thumb)).setImageBitmap(image.getThumbBitmap());
 
@@ -79,24 +76,24 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         if(fi != null){
             ArrayList<Model.FlickrImage> fiList = new ArrayList<>(asList(mvc.model.getSearchResults()));
 
-            if(sa == null) {
-                sa = new SearchAdapter(fiList);
-                setListAdapter(sa);
+            if(searchAdapter == null) {
+                searchAdapter = new SearchAdapter(fiList);
+                setListAdapter(searchAdapter);
             }
             else{
-                sa.updateSearchResults();
-                sa.notifyDataSetChanged();
+                searchAdapter.updateSearchResults();
+                searchAdapter.notifyDataSetChanged();
             }
         }
         else{
-            if(sa != null)
-                sa.clear();
+            if(searchAdapter != null)
+                searchAdapter.clear();
         }
 
     }
 
 //    public void clearAdapter(){
-//        sa.clear();
-//        sa = null;
+//        searchAdapter.clear();
+//        searchAdapter = null;
 //    }
 }

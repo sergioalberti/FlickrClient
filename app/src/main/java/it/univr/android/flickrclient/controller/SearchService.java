@@ -84,6 +84,7 @@ public class SearchService extends IntentService {
 
             while ((line = in.readLine()) != null)
                 xml += line;
+
             if (in != null)
                 in.close();
 
