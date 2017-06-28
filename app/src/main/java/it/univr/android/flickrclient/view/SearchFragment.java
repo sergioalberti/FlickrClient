@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import it.univr.android.flickrclient.FlickrApplication;
@@ -34,13 +35,13 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
     private class SearchAdapter extends ArrayAdapter<Model.FlickrImage> {
         private List<Model.FlickrImage> imagesList;
 
-        private SearchAdapter(ArrayList<Model.FlickrImage> fi) {
+        private SearchAdapter(List<Model.FlickrImage> fi) {
             super(getActivity(), R.layout.fragment_search_item, fi);
             this.imagesList = fi;
         }
 
         public void updateSearchResults(){
-            imagesList = Arrays.asList(mvc.model.getSearchResults());
+            imagesList = mvc.model.getSearchResults();
         }
 
         @Override
@@ -71,11 +72,9 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
     @Override @UiThread
     public void onModelChanged() {
-        final Model.FlickrImage[] fi = mvc.model.getSearchResults();
+        final List<Model.FlickrImage> fiList = mvc.model.getSearchResults();
 
-        if(fi != null){
-            ArrayList<Model.FlickrImage> fiList = new ArrayList<>(asList(mvc.model.getSearchResults()));
-
+        if(fiList != null){
             if(searchAdapter == null) {
                 searchAdapter = new SearchAdapter(fiList);
                 setListAdapter(searchAdapter);
@@ -89,7 +88,6 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             if(searchAdapter != null)
                 searchAdapter.clear();
         }
-
     }
 
 //    public void clearAdapter(){

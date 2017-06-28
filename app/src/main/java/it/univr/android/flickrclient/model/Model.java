@@ -6,14 +6,22 @@ package it.univr.android.flickrclient.model;
 
 import android.graphics.Bitmap;
 import android.support.annotation.UiThread;
-import android.util.Log;
+
+import net.jcip.annotations.ThreadSafe;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.view.View;
 
+@ThreadSafe
 public class Model {
     private MVC mvc;
-    private FlickrImage[] imageArray = null;
+    private ArrayList<FlickrImage> imagesList = null;
 
     public static class FlickrImage {
         private final String title;
@@ -59,28 +67,29 @@ public class Model {
         this.mvc = mvc;
     }
 
-    public void storeSearchResults(FlickrImage[] result){
-        imageArray = result;
+    public void storeSearchResults(ArrayList<FlickrImage> result){
+        imagesList = result;
         mvc.forEachView(View::onModelChanged);
     }
 
     public void updateImage(FlickrImage image){
-        for (int i = 0; i < imageArray.length; i++)
-            if (imageArray[i].equals(image)) {
-                imageArray[i] = image;
+        for (int i = 0; i < imagesList.size(); i++)
+            if (imagesList.get(i).equals(image)) {
+                imagesList.set(i, image);
                 mvc.forEachView(View::onModelChanged);
                 break;
             }
     }
 
-    @UiThread
-    public FlickrImage[] getSearchResults(){
-        if (imageArray != null)
-            return imageArray.clone();
+    public List<FlickrImage> getSearchResults(){
+        if(imagesList != null)
+            return Collections.synchronizedList(imagesList);
         return null;
     }
 
+
     public void clearModel(){
-        imageArray = null;
+        imagesList = null;
     }
+
 }

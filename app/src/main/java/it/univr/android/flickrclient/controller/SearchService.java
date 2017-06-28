@@ -55,7 +55,7 @@ public class SearchService extends IntentService {
         switch(intent.getAction()){
             case ACTION_FLICKR_SEARCH:
                 String searchKey = (String) intent.getSerializableExtra(SAVED_KEY);
-                Model.FlickrImage[] result = flickrSearch(searchKey);
+                ArrayList<Model.FlickrImage> result = flickrSearch(searchKey);
                 MVC mvc = ((FlickrApplication) getApplication()).getMvc();
                 mvc.model.storeSearchResults(result);
                 mvc.controller.callThumbTask(result);
@@ -64,7 +64,7 @@ public class SearchService extends IntentService {
     }
 
     @WorkerThread
-    private Model.FlickrImage[] flickrSearch(String searchKey){
+    private ArrayList<Model.FlickrImage> flickrSearch(String searchKey){
         ArrayList<Model.FlickrImage> response = new ArrayList<>();
         int counter = 0;
 
@@ -110,6 +110,6 @@ public class SearchService extends IntentService {
             e.printStackTrace();
         }
 
-        return response.toArray(new Model.FlickrImage[counter]);
+        return response;
     }
 }
