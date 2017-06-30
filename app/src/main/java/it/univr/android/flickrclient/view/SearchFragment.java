@@ -7,6 +7,7 @@ package it.univr.android.flickrclient.view;
 import android.app.ListFragment;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -45,21 +46,23 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         }
 
         @Override
-        public android.view.View getView(int position, android.view.View convertView, ViewGroup parent) {
-            android.view.View row = convertView;
+        public int getCount () {
+            return imagesList.size();
+        }
 
-            if (row == null) {
+        @Override
+        public android.view.View getView(int position, android.view.View convertView, ViewGroup parent) {
+            if (convertView == null) {
                 LayoutInflater inflater = getActivity().getLayoutInflater();
-                row = inflater.inflate(R.layout.fragment_search_item, parent, false);
+                convertView = inflater.inflate(R.layout.fragment_search_item, parent, false);
             }
 
             Model.FlickrImage image = imagesList.get(position);
             if (image.getThumbBitmap() != null)
-                ((ImageView) row.findViewById(R.id.image_thumb)).setImageBitmap(image.getThumbBitmap());
+                ((ImageView) convertView.findViewById(R.id.image_thumb)).setImageBitmap(image.getThumbBitmap());
 
-            ((TextView) row.findViewById(R.id.image_title)).setText(image.getTitle());
-
-            return row;
+            ((TextView) convertView.findViewById(R.id.image_title)).setText(position + ": " + image.getTitle());
+            return convertView;
         }
     }
 
@@ -78,6 +81,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             if(searchAdapter == null) {
                 searchAdapter = new SearchAdapter(fiList);
                 setListAdapter(searchAdapter);
+                setListShown(true); //removes loading spinner and shows the list
             }
             else{
                 searchAdapter.updateSearchResults();
@@ -90,8 +94,11 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         }
     }
 
-//    public void clearAdapter(){
-//        searchAdapter.clear();
-//        searchAdapter = null;
-//    }
+    @UiThread
+    public void clearAdapter(){
+        if(searchAdapter != null) {
+            searchAdapter.clear();
+            searchAdapter = null;
+        }
+    }
 }

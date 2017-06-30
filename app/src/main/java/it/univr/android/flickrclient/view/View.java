@@ -13,4 +13,7 @@ public interface View {
 
     @UiThread
     void showSearchResults();
+
+    @UiThread
+    void clearPreviousSearch();
 }

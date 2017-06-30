@@ -57,7 +57,9 @@ public class SearchService extends IntentService {
                 String searchKey = (String) intent.getSerializableExtra(SAVED_KEY);
                 ArrayList<Model.FlickrImage> result = flickrSearch(searchKey);
                 MVC mvc = ((FlickrApplication) getApplication()).getMvc();
+
                 mvc.model.storeSearchResults(result);
+                mvc.controller.killWorkingTasks();
                 mvc.controller.callThumbTask(result);
                 break;
         }
@@ -66,7 +68,6 @@ public class SearchService extends IntentService {
     @WorkerThread
     private ArrayList<Model.FlickrImage> flickrSearch(String searchKey){
         ArrayList<Model.FlickrImage> response = new ArrayList<>();
-        int counter = 0;
 
         try {
             String key = URLEncoder.encode(searchKey, "UTF-8");
@@ -102,11 +103,7 @@ public class SearchService extends IntentService {
                     response.add(new Model.FlickrImage(title.getTextContent(), url_z.getTextContent(), url_s.getTextContent()));
             }
         }
-        catch(IOException e ){
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
+        catch(IOException | ParserConfigurationException | SAXException e){
             e.printStackTrace();
         }
 

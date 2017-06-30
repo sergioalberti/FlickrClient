@@ -66,4 +66,10 @@ public class PhoneView extends FrameLayout implements View {
                 .addToBackStack(null)
                 .commit();
     }
+
+    public void clearPreviousSearch(){
+        //nothing to do
+        //previous search is not shown when this
+        //method is called
+    }
 }

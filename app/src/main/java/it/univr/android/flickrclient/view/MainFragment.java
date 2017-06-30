@@ -38,6 +38,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
         searchButton = (Button) view.findViewById(R.id.buttonSearch);
 
         searchButton.setOnClickListener(__ -> {
+            mvc.controller.clearPreviousSearch();
             mvc.controller.callSearchService(getActivity(), searchKey.getText().toString());
             mvc.controller.showSearchResults();
         });

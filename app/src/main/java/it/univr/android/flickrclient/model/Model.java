@@ -6,6 +6,7 @@ package it.univr.android.flickrclient.model;
 
 import android.graphics.Bitmap;
 import android.support.annotation.UiThread;
+import android.util.Log;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -73,12 +74,18 @@ public class Model {
     }
 
     public void updateImage(FlickrImage image){
-        for (int i = 0; i < imagesList.size(); i++)
-            if (imagesList.get(i).equals(image)) {
-                imagesList.set(i, image);
-                mvc.forEachView(View::onModelChanged);
-                break;
+        //controllo imageList!=null perchè se faccio una nuova ricerca
+        //mentre sta scaricando i thumb di quella precedente imageList
+        //vale null e mi dà errore quando richiama updateImage
+        if(imagesList != null) {
+            for (int i = 0; i < imagesList.size(); i++) {
+                if (imagesList.get(i).equals(image)) {
+                    imagesList.set(i, image);
+                    mvc.forEachView(View::onModelChanged);
+                    break;
+                }
             }
+        }
     }
 
     public List<FlickrImage> getSearchResults(){

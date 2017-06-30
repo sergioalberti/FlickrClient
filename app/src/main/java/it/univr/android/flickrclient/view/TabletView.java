@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.LinearLayout;
 
 import it.univr.android.flickrclient.FlickrApplication;
@@ -16,6 +17,7 @@ import it.univr.android.flickrclient.R;
 
 public class TabletView extends LinearLayout implements View {
     private MVC mvc;
+    private SearchFragment searchFragment;
 
     public TabletView(Context context) {
         super(context);
@@ -42,6 +44,11 @@ public class TabletView extends LinearLayout implements View {
         super.onAttachedToWindow();
         mvc = ((FlickrApplication) getContext().getApplicationContext()).getMvc();
         mvc.register(this);
+
+        //nascondo il loading spinner al primo avvio (su tablet)
+        searchFragment = ((SearchFragment)getSearchFragment());
+        searchFragment.setEmptyText("Nothing to show");
+        searchFragment.setListShown(true);
     }
 
     @Override
@@ -60,5 +67,10 @@ public class TabletView extends LinearLayout implements View {
     public void showSearchResults(){
         //nothing to do
         //tablet always shows search results
+    }
+
+    public void clearPreviousSearch(){
+        searchFragment.setListShown(false);
+        searchFragment.clearAdapter();
     }
 }
