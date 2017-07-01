@@ -5,6 +5,7 @@ package it.univr.android.flickrclient.view;
  */
 
 import android.app.ListFragment;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
 import android.util.Log;
@@ -60,6 +61,8 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             Model.FlickrImage image = imagesList.get(position);
             if (image.getThumbBitmap() != null)
                 ((ImageView) convertView.findViewById(R.id.image_thumb)).setImageBitmap(image.getThumbBitmap());
+            else
+                ((ImageView) convertView.findViewById(R.id.image_thumb)).setImageResource(R.drawable.preview);
 
             ((TextView) convertView.findViewById(R.id.image_title)).setText(position + ": " + image.getTitle());
             return convertView;

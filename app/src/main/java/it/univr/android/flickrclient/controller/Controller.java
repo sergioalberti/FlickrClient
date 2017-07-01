@@ -16,6 +16,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -51,7 +52,7 @@ public class Controller {
         SearchService.doFlickrSearch(context, key);
     }
 
-    //@UiThread
+    @WorkerThread
     public void callThumbTask(ArrayList<Model.FlickrImage> images) {
         executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         CompletionService<Model.FlickrImage> completionService =
@@ -71,11 +72,11 @@ public class Controller {
             Thread.currentThread().interrupt();
         }
         catch(ExecutionException e){
-            Log.d("THUMB TASK", "execution exception");
+            Log.d("ThumbTask", "execution exception");
         }
     }
 
-    //@WorkerThread
+    @WorkerThread
     public void killWorkingTasks(){
         if(executor != null) {
             executor.shutdownNow();
@@ -116,7 +117,7 @@ public class Controller {
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                Log.d("ThumbTask", "download interrupted");
             }
 
             return image;
