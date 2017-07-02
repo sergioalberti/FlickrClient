@@ -37,7 +37,6 @@ import java.util.concurrent.Future;
 public class Controller {
     private final String TAG = Controller.class.getName();
     private MVC mvc;
-    private ArrayList<Future<Model.FlickrImage>> thumbTaskList = new ArrayList<>();
     private static ExecutorService executor = null;
 
 
@@ -64,7 +63,6 @@ public class Controller {
         try{
             for(int i=0; i<images.size(); i++) {
                 Future<Model.FlickrImage> f = completionService.take();
-                thumbTaskList.add(f);
                 mvc.model.updateImage(f.get());
             }
         }
