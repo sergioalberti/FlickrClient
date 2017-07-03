@@ -51,15 +51,22 @@ public class MainFragment extends Fragment implements AbstractFragment {
         searchSpinner.setAdapter(spinnerAdapter);
 
         searchButton.setOnClickListener(__ -> {
+            String selectedOption = searchSpinner.getSelectedItem().toString();
+
             mvc.controller.clearPreviousSearch();
-            mvc.controller.callSearchService(getActivity(), searchKey.getText().toString());
+
+            if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY))
+                mvc.controller.callSearchService(getActivity(), selectedOption, searchKey.getText().toString());
+            else
+                mvc.controller.callSearchService(getActivity(), selectedOption, null);
+
             mvc.controller.showSearchResults();
         });
 
         searchSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(parent.getItemAtPosition(position).toString().equals("Key"))
+                if(parent.getItemAtPosition(position).toString().equals(mvc.controller.SEARCH_BY_KEY))
                     searchKey.setVisibility(View.VISIBLE);
                 else
                     searchKey.setVisibility(View.INVISIBLE);

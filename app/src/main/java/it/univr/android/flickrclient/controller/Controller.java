@@ -39,6 +39,10 @@ public class Controller {
     private MVC mvc;
     private static ExecutorService executor = null;
 
+    public static final String SEARCH_BY_KEY = "Key";
+    public static final String SEARCH_MOST_POPULAR = "Most Popular";
+    public static final String SEARCH_LAST_UPLOADS = "Last Uploads";
+
 
     @UiThread
     public void setMVC(MVC mvc){
@@ -46,9 +50,9 @@ public class Controller {
     }
 
     @UiThread
-    public void callSearchService(Context context, String key){
+    public void callSearchService(Context context, String searchType, String key){
         mvc.model.clearModel();
-        SearchService.doFlickrSearch(context, key);
+        SearchService.doFlickrSearch(context, searchType, key);
     }
 
     @WorkerThread
