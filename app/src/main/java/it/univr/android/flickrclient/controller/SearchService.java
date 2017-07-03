@@ -77,8 +77,8 @@ public class SearchService extends IntentService {
         ArrayList<Model.FlickrImage> response = new ArrayList<>();
 
         try {
-            String key = null;
-            String CONNECTION_URL = null;
+            String key;
+            String CONNECTION_URL;
 
             if(searchType.equals(mvc.controller.SEARCH_BY_KEY)) {
                 key = URLEncoder.encode(searchKey, "UTF-8");
@@ -99,7 +99,7 @@ public class SearchService extends IntentService {
             URLConnection conn = url.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-            String line = null, xml = "";
+            String line, xml = "";
 
             while ((line = in.readLine()) != null)
                 xml += line;
