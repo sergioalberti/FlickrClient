@@ -5,11 +5,14 @@ package it.univr.android.flickrclient.model;
  */
 
 import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.UiThread;
 import android.util.Log;
 
 import net.jcip.annotations.ThreadSafe;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -24,7 +27,7 @@ public class Model {
     private MVC mvc;
     private ArrayList<FlickrImage> imagesList = null;
 
-    public static class FlickrImage {
+    public static class FlickrImage implements Parcelable {
         private final String title;
         private final String imageURL;
         private final String thumbURL;
@@ -34,6 +37,13 @@ public class Model {
             this.title = title;
             this.imageURL = imageURL;
             this.thumbURL = thumbURL;
+        }
+
+        protected FlickrImage(Parcel in) {
+            title = in.readString();
+            imageURL = in.readString();
+            thumbURL = in.readString();
+            thumbBitmap = in.readParcelable(Bitmap.class.getClassLoader());
         }
 
         public String getTitle(){
@@ -62,6 +72,31 @@ public class Model {
         public boolean equals(FlickrImage other){
             return this.imageURL.equals(other.imageURL);
         }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(title);
+            dest.writeString(imageURL);
+            dest.writeString(thumbURL);
+            dest.writeValue(thumbBitmap);
+        }
+
+        public static final Creator<FlickrImage> CREATOR = new Creator<FlickrImage>() {
+            @Override
+            public FlickrImage createFromParcel(Parcel in) {
+                return new FlickrImage(in);
+            }
+
+            @Override
+            public FlickrImage[] newArray(int size) {
+                return new FlickrImage[size];
+            }
+        };
     }
 
     public void setMVC(MVC mvc){

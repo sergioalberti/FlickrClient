@@ -5,26 +5,36 @@ package it.univr.android.flickrclient.view;
  */
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.text.Layout;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
+import it.univr.android.flickrclient.model.Model;
 
 public class TabletView extends LinearLayout implements View {
     private MVC mvc;
     private SearchFragment searchFragment;
+    private boolean imageFragmentActive = false;
 
     public TabletView(Context context) {
         super(context);
+        getFragmentManager().beginTransaction().add(R.id.main_fragment, new MainFragment()).commit();
+        getFragmentManager().beginTransaction().add(R.id.search_fragment, new SearchFragment()).commit();
     }
 
     public TabletView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        getFragmentManager().beginTransaction().add(R.id.main_fragment, new MainFragment()).commit();
+        getFragmentManager().beginTransaction().add(R.id.search_fragment, new SearchFragment()).commit();
     }
 
     private FragmentManager getFragmentManager(){
@@ -59,18 +69,43 @@ public class TabletView extends LinearLayout implements View {
 
     @Override
     public void onModelChanged() {
-        //delegate to both fragments
         getMainFragment().onModelChanged();
-        getSearchFragment().onModelChanged();
+
+        //chiamo onModelChanged sul SearchFragment solo se
+        //non ho attivo l'ImageFragment
+        if(!imageFragmentActive)
+            getSearchFragment().onModelChanged();
     }
 
     public void showSearchResults(){
-        //nothing to do
-        //tablet always shows search results
+        //se è attivo l'ImageFragment per mostrare i risultati
+        //della ricerca devo sostituirlo con un SearchFragment
+        if(imageFragmentActive){
+            getFragmentManager()
+                    .beginTransaction()
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                    .replace(R.id.search_fragment, new SearchFragment())
+                    .commit();
+
+            imageFragmentActive = false;
+        }
+    }
+
+    public void showFullImage(Model.FlickrImage image){
+        imageFragmentActive = true;
+
+        getFragmentManager()
+                .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.search_fragment, ImageFragment.newInstance(image))
+                .addToBackStack(null)
+                .commit();
     }
 
     public void clearPreviousSearch(){
-        searchFragment.setListShown(false);
+        if(!imageFragmentActive)
+            searchFragment.setListShown(false);
+
         searchFragment.clearAdapter();
     }
 }

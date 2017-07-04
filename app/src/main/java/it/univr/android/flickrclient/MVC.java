@@ -47,4 +47,10 @@ public class MVC {
         });
     }
 
+    //this is "wrong" in MVC pattern - FIX NEEDED
+    public void forEachViewTMP(Model.FlickrImage image){
+        for(View v : views)
+            v.showFullImage(image);
+    }
+
 }

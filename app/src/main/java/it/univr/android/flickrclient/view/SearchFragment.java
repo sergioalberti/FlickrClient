@@ -81,8 +81,8 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Model.FlickrImage m = (Model.FlickrImage)parent.getAdapter().getItem(position);
-                Toast.makeText(getActivity(), m.getTitle() + "clicked", Toast.LENGTH_SHORT).show();
+                Model.FlickrImage selectedImage = (Model.FlickrImage)getListView().getItemAtPosition(position);
+                mvc.controller.showFullImage(selectedImage);
             }
         });
 

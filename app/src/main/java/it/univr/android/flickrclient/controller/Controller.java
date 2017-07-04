@@ -86,12 +86,19 @@ public class Controller {
         }
     }
 
+    @UiThread
     public void showSearchResults(){
         mvc.forEachView(View::showSearchResults);
     }
 
+    @UiThread
     public void clearPreviousSearch(){
         mvc.forEachView(View::clearPreviousSearch);
+    }
+
+    @UiThread
+    public void showFullImage(Model.FlickrImage image){
+        mvc.forEachViewTMP(image);
     }
 
 

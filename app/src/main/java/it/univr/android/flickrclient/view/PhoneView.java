@@ -6,13 +6,16 @@ package it.univr.android.flickrclient.view;
 
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.FrameLayout;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
+import it.univr.android.flickrclient.model.Model;
 
 public class PhoneView extends FrameLayout implements View {
     private MVC mvc;
@@ -63,6 +66,16 @@ public class PhoneView extends FrameLayout implements View {
         getFragmentManager()
                 .beginTransaction()
                 .replace(R.id.phone_view, new SearchFragment())
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public void showFullImage(Model.FlickrImage image){
+        Log.d("showFullImage PHONE", "i'm here");
+        getFragmentManager()
+                .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.phone_view, ImageFragment.newInstance(image))
                 .addToBackStack(null)
                 .commit();
     }
