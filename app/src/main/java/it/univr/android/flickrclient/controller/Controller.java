@@ -103,9 +103,7 @@ public class Controller {
     }
 
     @UiThread
-    public void showSearchResults(){
-        mvc.forEachView(View::showSearchResults);
-    }
+    public void showSearchResults(){ mvc.forEachView(View::showSearchResults); }
 
     @UiThread
     public void clearPreviousSearch(){
@@ -113,9 +111,7 @@ public class Controller {
     }
 
     @UiThread
-    public void showFullImage(Model.FlickrImage image){
-        mvc.forEachViewTMP(image);
-    }
+    public void showFullImage(){ mvc.forEachView(View::showFullImage); }
 
     // changed ThumbTask to DownloadTask due to conformity with both thumb size images and original
     // images that have to be downloaded

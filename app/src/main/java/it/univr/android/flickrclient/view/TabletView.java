@@ -5,20 +5,15 @@ package it.univr.android.flickrclient.view;
  */
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.text.Layout;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
-import it.univr.android.flickrclient.model.Model;
 
 public class TabletView extends LinearLayout implements View {
     private MVC mvc;
@@ -91,13 +86,13 @@ public class TabletView extends LinearLayout implements View {
         }
     }
 
-    public void showFullImage(Model.FlickrImage image){
+    public void showFullImage(){
         imageFragmentActive = true;
 
         getFragmentManager()
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .replace(R.id.search_fragment, ImageFragment.newInstance(image))
+                .replace(R.id.search_fragment, new ImageFragment())
                 .addToBackStack(null)
                 .commit();
     }

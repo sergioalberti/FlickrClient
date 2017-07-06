@@ -34,6 +34,7 @@ public class Model {
         private final String thumbURL;
         private Bitmap thumbBitmap = null;
         private Bitmap fullSizeBitmap = null;
+        private boolean isEnabled = false;
 
         public FlickrImage(String title, String imageURL, String thumbURL){
             this.title = title;
@@ -47,6 +48,19 @@ public class Model {
             thumbURL = in.readString();
             thumbBitmap = in.readParcelable(Bitmap.class.getClassLoader());
         }
+
+        public boolean isEnbled(){
+            return isEnabled;
+        }
+
+        public void enable(){
+            isEnabled = true;
+        }
+
+        public void disable(){
+            isEnabled = false;
+        }
+
 
         public String getTitle(){
             return title;
@@ -146,6 +160,30 @@ public class Model {
             }
         }
         return null;
+    }
+
+    // used to get the selected image (i.e. when the image has to be enlarged)
+    // the selected image is disabled when calling this method
+
+    public FlickrImage getEnabled(){
+        if(imagesList != null) {
+            for (int i = 0; i < imagesList.size(); i++) {
+                if (imagesList.get(i).isEnbled()) {
+                    return imagesList.get(i);
+                }
+            }
+        }
+        return null;
+    }
+
+    // used to disable all images from the list, once the ImageFragment is closed
+
+    public void reset(){
+        if(imagesList != null) {
+            for (int i = 0; i < imagesList.size(); i++) {
+                imagesList.get(i).disable();
+            }
+        }
     }
 
     public List<FlickrImage> getSearchResults(){

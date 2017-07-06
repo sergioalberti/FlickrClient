@@ -2,10 +2,8 @@ package it.univr.android.flickrclient.view;
 
 
 import android.app.Fragment;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,28 +19,18 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     private Model.FlickrImage image;
     private ImageView iv;
 
+    public static final String ENABLED_IMAGE_URL = "enabled_image_url";
+
     public ImageFragment(){
-    }
-
-    public static ImageFragment newInstance(Model.FlickrImage image){
-        ImageFragment newFragment = new ImageFragment();
-
-        Bundle args = new Bundle();
-        args.putParcelable("image", image);
-        newFragment.setArguments(args);
-        return newFragment;
     }
 
     @Override @UiThread
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        image = getArguments().getParcelable("image");
-        if (image == null)
-            Log.d("ImageFragment", "image null");
-        else{
-            Log.d("title", image.getTitle());
-            Log.d("image url", image.getImageURL());
-            Log.d("thumb url", image.getThumbURL());
+        mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
+        image = mvc.model.getEnabled();
+        if(image != null && savedInstanceState != null && !savedInstanceState.isEmpty()){
+            savedInstanceState.putString(ENABLED_IMAGE_URL, image.getImageURL());
         }
     }
 
@@ -62,18 +50,24 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     @Override @UiThread
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
 
-        // a new intent service - DownloadService is invoked through controller
+        if(savedInstanceState != null && !savedInstanceState.isEmpty())
+            image = mvc.model.getImage(savedInstanceState.getString(ENABLED_IMAGE_URL));
 
-        mvc.controller.callDownloadService(getActivity(), image, Model.UrlType.FULLSIZE);
+        // maybe the savedIstanceState is still empty, so a nullity check is made. The image could
+        // have been downloaded by another ImageFragment call previously, in such case a new download
+        // is wasteful (since full image data are stored)
+
+        if (image != null && image.getBitmap(Model.UrlType.FULLSIZE) == null)
+            mvc.controller.callDownloadService(getActivity(), image, Model.UrlType.FULLSIZE);
+
         onModelChanged();
     }
 
     @Override
     public void onModelChanged() {
-        Bitmap b = image.getBitmap(Model.UrlType.FULLSIZE);
-        if (b != null)
-            iv.setImageBitmap(b);
+
+        if (image != null && image.getBitmap(Model.UrlType.FULLSIZE) != null)
+            iv.setImageBitmap(image.getBitmap(Model.UrlType.FULLSIZE));
     }
 }

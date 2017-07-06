@@ -6,8 +6,6 @@ package it.univr.android.flickrclient.view;
 
 import android.support.annotation.UiThread;
 
-import it.univr.android.flickrclient.model.Model;
-
 public interface View {
 
     @UiThread
@@ -17,7 +15,7 @@ public interface View {
     void showSearchResults();
 
     @UiThread
-    void showFullImage(Model.FlickrImage image);
+    void showFullImage();
 
     @UiThread
     void clearPreviousSearch();

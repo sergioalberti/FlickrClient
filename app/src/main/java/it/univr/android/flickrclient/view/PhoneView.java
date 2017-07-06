@@ -9,13 +9,11 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.FrameLayout;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
-import it.univr.android.flickrclient.model.Model;
 
 public class PhoneView extends FrameLayout implements View {
     private MVC mvc;
@@ -65,17 +63,17 @@ public class PhoneView extends FrameLayout implements View {
         //transaction to SearchFragment to show results
         getFragmentManager()
                 .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .replace(R.id.phone_view, new SearchFragment())
                 .addToBackStack(null)
                 .commit();
     }
 
-    public void showFullImage(Model.FlickrImage image){
-        Log.d("showFullImage PHONE", "i'm here");
+    public void showFullImage(){
         getFragmentManager()
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .replace(R.id.phone_view, ImageFragment.newInstance(image))
+                .replace(R.id.phone_view, new ImageFragment())
                 .addToBackStack(null)
                 .commit();
     }

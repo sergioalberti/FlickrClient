@@ -75,7 +75,14 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Model.FlickrImage selectedImage = (Model.FlickrImage)getListView().getItemAtPosition(position);
-                mvc.controller.showFullImage(selectedImage);
+
+                // all images in the local store are disabled, only the selected one is enabled
+
+                mvc.model.reset();
+                selectedImage.enable();
+
+                mvc.controller.callDownloadService(getActivity(), selectedImage, Model.UrlType.FULLSIZE);
+                mvc.controller.showFullImage();
             }
         });
 
