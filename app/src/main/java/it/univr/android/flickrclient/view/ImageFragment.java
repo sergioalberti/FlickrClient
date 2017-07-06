@@ -1,6 +1,7 @@
 package it.univr.android.flickrclient.view;
 
 
+import android.animation.ObjectAnimator;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
@@ -19,6 +20,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     private Model.FlickrImage image;
     private ImageView iv;
 
+    public static final int ANIMATION_DURATION = 150;
     public static final String ENABLED_IMAGE_URL = "enabled_image_url";
 
     public ImageFragment(){
@@ -66,8 +68,17 @@ public class ImageFragment extends Fragment implements AbstractFragment {
 
     @Override
     public void onModelChanged() {
+        // getDrawable method on ImageView tells whenever the Bitmap is yet set or not. If it's set,
+        // it's not set another time (since several calls to onModelChanged are permitted
 
-        if (image != null && image.getBitmap(Model.UrlType.FULLSIZE) != null)
+        if (image != null && image.getBitmap(Model.UrlType.FULLSIZE) != null && iv.getDrawable() == null) {
             iv.setImageBitmap(image.getBitmap(Model.UrlType.FULLSIZE));
+
+            // some animations are used when image appears for the fist time
+
+            ObjectAnimator.ofFloat(iv, "alpha", 0f, 1f).setDuration(ANIMATION_DURATION).start();
+            ObjectAnimator.ofFloat(iv, "scaleX", 0.9f, 1f).setDuration(ANIMATION_DURATION).start();
+            ObjectAnimator.ofFloat(iv, "scaleY", 0.9f, 1f).setDuration(ANIMATION_DURATION).start();
+        }
     }
 }

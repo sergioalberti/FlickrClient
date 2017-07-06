@@ -61,7 +61,6 @@ public class Model {
             isEnabled = false;
         }
 
-
         public String getTitle(){
             return title;
         }

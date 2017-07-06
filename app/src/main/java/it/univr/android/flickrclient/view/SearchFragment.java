@@ -27,6 +27,8 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
     private MVC mvc;
     private SearchAdapter searchAdapter = null;
 
+    public static final int ANIMATION_DURATION = 150;
+
     public SearchFragment(){
     }
 
@@ -55,12 +57,16 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             }
 
             Model.FlickrImage image = imagesList.get(position);
-            if (image.getBitmap(Model.UrlType.THUMB) != null)
-                ((ImageView) convertView.findViewById(R.id.image_thumb)).setImageBitmap(image.getBitmap(Model.UrlType.THUMB));
-            else
-                ((ImageView) convertView.findViewById(R.id.image_thumb)).setImageResource(R.drawable.preview);
 
-            ((TextView) convertView.findViewById(R.id.image_title)).setText(position + ": " + image.getTitle());
+            ImageView iv = (ImageView) convertView.findViewById(R.id.image_thumb);
+            TextView tv = (TextView) convertView.findViewById(R.id.image_title);
+
+            if (image != null && image.getBitmap(Model.UrlType.THUMB) != null)
+                iv.setImageBitmap(image.getBitmap(Model.UrlType.THUMB));
+            else
+               iv.setImageResource(R.drawable.preview);
+
+            tv.setText(position + 1 + ": " + image.getTitle());
             return convertView;
         }
     }

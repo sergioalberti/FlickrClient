@@ -18,7 +18,7 @@ import it.univr.android.flickrclient.R;
 public class TabletView extends LinearLayout implements View {
     private MVC mvc;
     private SearchFragment searchFragment;
-    private boolean imageFragmentActive = false;
+    //private boolean imageFragmentActive = false;
 
     public TabletView(Context context) {
         super(context);
@@ -68,26 +68,27 @@ public class TabletView extends LinearLayout implements View {
 
         //chiamo onModelChanged sul SearchFragment solo se
         //non ho attivo l'ImageFragment
-        if(!imageFragmentActive)
+        //if(!imageFragmentActive)
             getSearchFragment().onModelChanged();
     }
 
     public void showSearchResults(){
         //se è attivo l'ImageFragment per mostrare i risultati
         //della ricerca devo sostituirlo con un SearchFragment
-        if(imageFragmentActive){
+        //if(imageFragmentActive){
             getFragmentManager()
                     .beginTransaction()
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                     .replace(R.id.search_fragment, new SearchFragment())
+                    .addToBackStack(null)
                     .commit();
 
-            imageFragmentActive = false;
-        }
+            //imageFragmentActive = false;
+        //}
     }
 
     public void showFullImage(){
-        imageFragmentActive = true;
+        //imageFragmentActive = true;
 
         getFragmentManager()
                 .beginTransaction()
@@ -98,8 +99,8 @@ public class TabletView extends LinearLayout implements View {
     }
 
     public void clearPreviousSearch(){
-        if(!imageFragmentActive)
-            searchFragment.setListShown(false);
+        //if(!imageFragmentActive)
+            //searchFragment.setListShown(false);
 
         searchFragment.clearAdapter();
     }
