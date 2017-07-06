@@ -22,5 +22,6 @@
         </activity>
 
         <service android:name="it.univr.android.flickrclient.controller.SearchService" />
+        <service android:name="it.univr.android.flickrclient.controller.DownloadService" />
     </application>
 </manifest>

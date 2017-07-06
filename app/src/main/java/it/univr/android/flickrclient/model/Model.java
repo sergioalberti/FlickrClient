@@ -7,17 +7,12 @@ package it.univr.android.flickrclient.model;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.UiThread;
-import android.util.Log;
 
 import net.jcip.annotations.ThreadSafe;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.view.View;
@@ -27,11 +22,18 @@ public class Model {
     private MVC mvc;
     private ArrayList<FlickrImage> imagesList = null;
 
+    // enumeration is used to know which type of image is required
+    public enum UrlType {
+        THUMB,
+        FULLSIZE
+    }
+
     public static class FlickrImage implements Parcelable {
         private final String title;
         private final String imageURL;
         private final String thumbURL;
         private Bitmap thumbBitmap = null;
+        private Bitmap fullSizeBitmap = null;
 
         public FlickrImage(String title, String imageURL, String thumbURL){
             this.title = title;
@@ -60,13 +62,21 @@ public class Model {
 
         public String toString(){ return imageURL; }
 
-        public FlickrImage setThumbBitmap(Bitmap b){
-            this.thumbBitmap = b;
+        public FlickrImage setBitmap(Bitmap b, UrlType ut){
+            if (ut == UrlType.FULLSIZE)
+                this.fullSizeBitmap = b;
+            else
+                this.thumbBitmap = b;
             return this;
         }
 
-        public Bitmap getThumbBitmap(){
-            return thumbBitmap;
+        // changed getThumbBitmap in getBitmap to ensure conformity with two size images model (one
+        // used to thumbs, other to full size images)
+        public Bitmap getBitmap(UrlType ut) {
+            if (ut == UrlType.FULLSIZE)
+                return fullSizeBitmap;
+            else
+                return thumbBitmap;
         }
 
         public boolean equals(FlickrImage other){
@@ -121,6 +131,21 @@ public class Model {
                 }
             }
         }
+    }
+
+    // added a method that returns the FlickrImage object from local store. The method is used
+    // whenever storing the whole FlickrImage object is too wasteful. Thus only a String is used
+    // to point to a FlickrImage in the store.
+
+    public FlickrImage getImage(String imageURL){
+        if(imagesList != null) {
+            for (int i = 0; i < imagesList.size(); i++) {
+                if (imagesList.get(i).getImageURL().equals(imageURL)) {
+                    return imagesList.get(i);
+                }
+            }
+        }
+        return null;
     }
 
     public List<FlickrImage> getSearchResults(){

@@ -1,20 +1,15 @@
 package it.univr.android.flickrclient.view;
 
 
+import android.app.Fragment;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
-import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.TextView;
+import android.widget.ImageView;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
@@ -24,6 +19,7 @@ import it.univr.android.flickrclient.model.Model;
 public class ImageFragment extends Fragment implements AbstractFragment {
     private MVC mvc;
     private Model.FlickrImage image;
+    private ImageView iv;
 
     public ImageFragment(){
     }
@@ -53,6 +49,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     @Override @UiThread
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_image, container, false);
+        iv = (ImageView) view.findViewById(R.id.image_box);
 
         return view;
     }
@@ -66,11 +63,17 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
+
+        // a new intent service - DownloadService is invoked through controller
+
+        mvc.controller.callDownloadService(getActivity(), image, Model.UrlType.FULLSIZE);
         onModelChanged();
     }
 
     @Override
     public void onModelChanged() {
-        //nothing to do
+        Bitmap b = image.getBitmap(Model.UrlType.FULLSIZE);
+        if (b != null)
+            iv.setImageBitmap(b);
     }
 }

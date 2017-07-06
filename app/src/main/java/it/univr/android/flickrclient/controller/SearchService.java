@@ -8,7 +8,6 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.WorkerThread;
-import android.util.Log;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -67,7 +66,7 @@ public class SearchService extends IntentService {
                 ArrayList<Model.FlickrImage> result = flickrSearch(searchType, searchKey);
                 mvc.model.storeSearchResults(result);
                 mvc.controller.killWorkingTasks();
-                mvc.controller.callThumbTask(result);
+                mvc.controller.callDownloadTask(result, Model.UrlType.THUMB);
                 break;
         }
     }

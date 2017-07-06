@@ -5,30 +5,23 @@ package it.univr.android.flickrclient.view;
  */
 
 import android.app.ListFragment;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
-import android.util.Log;
-import android.view.*;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
 import it.univr.android.flickrclient.model.Model;
-
-import static java.util.Arrays.asList;
 
 public class SearchFragment extends ListFragment implements AbstractFragment {
     private MVC mvc;
@@ -62,8 +55,8 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             }
 
             Model.FlickrImage image = imagesList.get(position);
-            if (image.getThumbBitmap() != null)
-                ((ImageView) convertView.findViewById(R.id.image_thumb)).setImageBitmap(image.getThumbBitmap());
+            if (image.getBitmap(Model.UrlType.THUMB) != null)
+                ((ImageView) convertView.findViewById(R.id.image_thumb)).setImageBitmap(image.getBitmap(Model.UrlType.THUMB));
             else
                 ((ImageView) convertView.findViewById(R.id.image_thumb)).setImageResource(R.drawable.preview);
 
