@@ -20,6 +20,8 @@ public class TabletView extends LinearLayout implements View {
     private SearchFragment searchFragment;
     //private boolean imageFragmentActive = false;
 
+    private static final String SHARE = "Condividi";
+
     public TabletView(Context context) {
         super(context);
         getFragmentManager().beginTransaction().add(R.id.main_fragment, new MainFragment()).commit();

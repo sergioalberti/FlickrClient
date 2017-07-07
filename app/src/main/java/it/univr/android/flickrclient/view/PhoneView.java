@@ -17,6 +17,7 @@ import it.univr.android.flickrclient.R;
 
 public class PhoneView extends FrameLayout implements View {
     private MVC mvc;
+    private static final String SHARE = "Condividi";
 
     public PhoneView(Context context) {
         super(context);

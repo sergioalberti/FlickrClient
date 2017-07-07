@@ -32,14 +32,17 @@ public class Model {
         private final String title;
         private final String imageURL;
         private final String thumbURL;
+        private String absoluteURL;
         private Bitmap thumbBitmap = null;
         private Bitmap fullSizeBitmap = null;
         private boolean isEnabled = false;
+        private boolean isShared = false;
 
         public FlickrImage(String title, String imageURL, String thumbURL){
             this.title = title;
             this.imageURL = imageURL;
             this.thumbURL = thumbURL;
+            this.absoluteURL = "";
         }
 
         protected FlickrImage(Parcel in) {
@@ -53,16 +56,27 @@ public class Model {
             return isEnabled;
         }
 
+        public boolean isShared(){
+            return isShared;
+        }
+
         public void enable(){
             isEnabled = true;
         }
 
+        public void share() { isShared = true; }
+
         public void disable(){
             isEnabled = false;
+            isShared = false;
         }
 
         public String getTitle(){
             return title;
+        }
+
+        public String getAbsoluteURL(){
+            return absoluteURL;
         }
 
         public String getImageURL(){
@@ -75,6 +89,15 @@ public class Model {
 
         public String toString(){ return imageURL; }
 
+        // changed getThumbBitmap in getBitmap to ensure conformity with two size images model (one
+        // used to thumbs, other to full size images)
+        public Bitmap getBitmap(UrlType ut) {
+            if (ut == UrlType.FULLSIZE)
+                return fullSizeBitmap;
+            else
+                return thumbBitmap;
+        }
+
         public FlickrImage setBitmap(Bitmap b, UrlType ut){
             if (ut == UrlType.FULLSIZE)
                 this.fullSizeBitmap = b;
@@ -83,13 +106,8 @@ public class Model {
             return this;
         }
 
-        // changed getThumbBitmap in getBitmap to ensure conformity with two size images model (one
-        // used to thumbs, other to full size images)
-        public Bitmap getBitmap(UrlType ut) {
-            if (ut == UrlType.FULLSIZE)
-                return fullSizeBitmap;
-            else
-                return thumbBitmap;
+        public void setAbsoluteURL(String absoluteURL){
+            this.absoluteURL = absoluteURL;
         }
 
         public boolean equals(FlickrImage other){
@@ -168,6 +186,17 @@ public class Model {
         if(imagesList != null) {
             for (int i = 0; i < imagesList.size(); i++) {
                 if (imagesList.get(i).isEnbled()) {
+                    return imagesList.get(i);
+                }
+            }
+        }
+        return null;
+    }
+
+    public FlickrImage getShared(){
+        if(imagesList != null) {
+            for (int i = 0; i < imagesList.size(); i++) {
+                if (imagesList.get(i).isShared()) {
                     return imagesList.get(i);
                 }
             }
