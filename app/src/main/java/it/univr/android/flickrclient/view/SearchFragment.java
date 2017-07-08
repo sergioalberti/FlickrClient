@@ -38,7 +38,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
     private SearchAdapter searchAdapter = null;
 
     private static final String SHARE = "Condividi";
-    private static final String SEARCH_BY_AUTHOR = "Cerca per autore";;
+    private static final String SEARCH_BY_AUTHOR = "Altre immagini di  ";;
 
     public SearchFragment(){
     }
@@ -122,7 +122,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
         menu.setHeaderTitle(selectedImage.getTitle());
         menu.add(SHARE);
-        menu.add(SEARCH_BY_AUTHOR);
+        menu.add(SEARCH_BY_AUTHOR + selectedImage.getAuthorName());
     }
 
     @Override
@@ -149,7 +149,13 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             // finished. If the image was just downloaded, the method will not download it from
             // sketch
         } else {
+            // search bu athor
 
+            mvc.controller.clearPreviousSearch();
+
+            mvc.controller.callSearchService(getActivity(), mvc.controller.SEARCH_BY_AUTHOR, null, selectedImage.getAuthor());
+
+            mvc.controller.showSearchResults();
         }
         return true;
      }

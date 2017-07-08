@@ -37,6 +37,7 @@ public class SearchService extends IntentService {
     private static final String ACTION_FLICKR_SEARCH = "search";
     private static final String SAVED_KEY = "search_key";
     private static final String SAVED_TYPE = "search_type";
+    private static final String SAVED_AUTHOR = "owner";
     private static final String API_KEY = "be4922ffb4ded82d452af0477842bdba";
     private MVC mvc;
 
@@ -46,10 +47,15 @@ public class SearchService extends IntentService {
     }
 
     static void doFlickrSearch(Context context, String searchType, String key){
+        doFlickrSearch(context, searchType, key, "");
+    }
+
+    static void doFlickrSearch(Context context, String searchType, String key, String author){
         Intent intent = new Intent(context, SearchService.class);
         intent.setAction(ACTION_FLICKR_SEARCH);
         intent.putExtra(SAVED_TYPE, searchType);
         intent.putExtra(SAVED_KEY, key);
+        intent.putExtra(SAVED_AUTHOR, author);
 
         context.startService(intent);
     }
@@ -62,8 +68,9 @@ public class SearchService extends IntentService {
             case ACTION_FLICKR_SEARCH:
                 String searchKey = (String) intent.getSerializableExtra(SAVED_KEY);
                 String searchType = (String) intent.getSerializableExtra(SAVED_TYPE);
+                String author = (String) intent.getSerializableExtra(SAVED_AUTHOR);
 
-                ArrayList<Model.FlickrImage> result = flickrSearch(searchType, searchKey);
+                ArrayList<Model.FlickrImage> result = flickrSearch(searchType, searchKey, author);
                 mvc.model.storeSearchResults(result);
                 mvc.controller.killWorkingTasks();
                 mvc.controller.callDownloadTask(result, Model.UrlType.THUMB);
@@ -72,7 +79,7 @@ public class SearchService extends IntentService {
     }
 
     @WorkerThread
-    private ArrayList<Model.FlickrImage> flickrSearch(String searchType, String searchKey){
+    private ArrayList<Model.FlickrImage> flickrSearch(String searchType, String searchKey, String author){
         ArrayList<Model.FlickrImage> response = new ArrayList<>();
 
         try {
@@ -81,18 +88,23 @@ public class SearchService extends IntentService {
 
             if(searchType.equals(mvc.controller.SEARCH_BY_KEY)) {
                 key = URLEncoder.encode(searchKey, "UTF-8");
-                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr.\n" +
-                        "photos.search&api_key=" + API_KEY + "&text=" + key + "&extras=url_z,url_s,\n" +
-                        "&per_page=50";
+                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                        "photos.search&api_key=" + API_KEY + "&text=" + key +
+                        "&extras=url_z,url_s,owner_name,&per_page=50";
             }
             else if(searchType.equals(mvc.controller.SEARCH_LAST_UPLOADS))
-                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr.\n" +
-                        "photos.getRecent&api_key=" + API_KEY + "&extras=url_z,url_s,\n" +
+                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                        "photos.getRecent&api_key=" + API_KEY + "&extras=url_z,url_s,owner_name," +
                         "&per_page=50";
+            else if(searchType.equals(mvc.controller.SEARCH_MOST_POPULAR))
+                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                        "interestingness.getList&api_key=" + API_KEY + "&extras=url_z,url_s," +
+                        "owner_name,&per_page=50";
+
             else
-                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr.\n" +
-                        "interestingness.getList&api_key=" + API_KEY + "&extras=url_z,url_s,\n" +
-                        "&per_page=50";
+                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                        "people.getPublicPhotos&api_key=" + API_KEY + "&user_id=" + author +
+                        "&extras=url_z,url_s,owner_name,&per_page=50";
 
             URL url = new URL(CONNECTION_URL);
             URLConnection conn = url.openConnection();
@@ -113,15 +125,17 @@ public class SearchService extends IntentService {
             NodeList photos = document.getElementsByTagName("photo");
 
             NamedNodeMap nnm;
-            Node title, url_z, url_s;
+            Node title, url_z, url_s, owner, owner_name;
 
             for (int i = 0; i < photos.getLength(); i++){
                 nnm = photos.item(i).getAttributes();
                 title = nnm.getNamedItem("title");
                 url_z = nnm.getNamedItem("url_z");
                 url_s = nnm.getNamedItem("url_s");
+                owner = nnm.getNamedItem("owner");
+                owner_name = nnm.getNamedItem("ownername");
                 if (title != null && url_z != null && url_s != null)
-                    response.add(new Model.FlickrImage(title.getTextContent(), url_z.getTextContent(), url_s.getTextContent()));
+                    response.add(new Model.FlickrImage(title.getTextContent(), owner.getTextContent(), url_z.getTextContent(), url_s.getTextContent(), owner_name.getTextContent()));
             }
         }
         catch(IOException | ParserConfigurationException | SAXException e){

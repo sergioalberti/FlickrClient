@@ -37,6 +37,7 @@ public class Controller {
     public static final String SEARCH_BY_KEY = "Key";
     public static final String SEARCH_MOST_POPULAR = "Most Popular";
     public static final String SEARCH_LAST_UPLOADS = "Last Uploads";
+    public static final String SEARCH_BY_AUTHOR = "Author";
 
 
     @UiThread
@@ -47,7 +48,13 @@ public class Controller {
     @UiThread
     public void callSearchService(Context context, String searchType, String key){
         mvc.model.clearModel();
-        SearchService.doFlickrSearch(context, searchType, key);
+        SearchService.doFlickrSearch(context, searchType, key, null);
+    }
+
+    @UiThread
+    public void callSearchService(Context context, String searchType, String key, String author){
+        mvc.model.clearModel();
+        SearchService.doFlickrSearch(context, searchType, key, author);
     }
 
     @UiThread

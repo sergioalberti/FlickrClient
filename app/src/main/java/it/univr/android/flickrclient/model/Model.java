@@ -30,25 +30,31 @@ public class Model {
 
     public static class FlickrImage implements Parcelable {
         private final String title;
+        private final String author;
         private final String imageURL;
         private final String thumbURL;
+        private final String authorName;
         private String absoluteURL;
         private Bitmap thumbBitmap = null;
         private Bitmap fullSizeBitmap = null;
         private boolean isEnabled = false;
         private boolean isShared = false;
 
-        public FlickrImage(String title, String imageURL, String thumbURL){
+        public FlickrImage(String title, String author, String imageURL, String thumbURL, String authorName){
             this.title = title;
+            this.author = author;
             this.imageURL = imageURL;
             this.thumbURL = thumbURL;
+            this.authorName = authorName;
             this.absoluteURL = "";
         }
 
         protected FlickrImage(Parcel in) {
             title = in.readString();
+            author = in.readString();
             imageURL = in.readString();
             thumbURL = in.readString();
+            authorName = in.readString();
             thumbBitmap = in.readParcelable(Bitmap.class.getClassLoader());
         }
 
@@ -73,6 +79,14 @@ public class Model {
 
         public String getTitle(){
             return title;
+        }
+
+        public String getAuthor(){
+            return author;
+        }
+
+        public String getAuthorName(){
+            return authorName;
         }
 
         public String getAbsoluteURL(){
