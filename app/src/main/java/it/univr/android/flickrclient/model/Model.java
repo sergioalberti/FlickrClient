@@ -4,23 +4,26 @@ package it.univr.android.flickrclient.model;
  * Created by user on 5/16/17.
  */
 
-import android.graphics.Bitmap;
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import net.jcip.annotations.ThreadSafe;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.view.View;
 
 @ThreadSafe
-public class Model {
+public class Model implements Iterable<FlickrImage> {
     private MVC mvc;
     private ArrayList<FlickrImage> imagesList = null;
+    private ArrayList<FlickrImage> oldImagesList = null;
+
+    @Override
+    public Iterator<FlickrImage> iterator() {
+        return imagesList.iterator();
+    }
 
     // enumeration is used to know which type of image is required
     public enum UrlType {
@@ -28,204 +31,75 @@ public class Model {
         FULLSIZE
     }
 
-    public static class FlickrImage implements Parcelable {
-        private final String title;
-        private final String author;
-        private final String imageURL;
-        private final String thumbURL;
-        private final String authorName;
-        private String absoluteURL;
-        private Bitmap thumbBitmap = null;
-        private Bitmap fullSizeBitmap = null;
-        private boolean isEnabled = false;
-        private boolean isShared = false;
-
-        public FlickrImage(String title, String author, String imageURL, String thumbURL, String authorName){
-            this.title = title;
-            this.author = author;
-            this.imageURL = imageURL;
-            this.thumbURL = thumbURL;
-            this.authorName = authorName;
-            this.absoluteURL = "";
-        }
-
-        protected FlickrImage(Parcel in) {
-            title = in.readString();
-            author = in.readString();
-            imageURL = in.readString();
-            thumbURL = in.readString();
-            authorName = in.readString();
-            thumbBitmap = in.readParcelable(Bitmap.class.getClassLoader());
-        }
-
-        public boolean isEnbled(){
-            return isEnabled;
-        }
-
-        public boolean isShared(){
-            return isShared;
-        }
-
-        public void enable(){
-            isEnabled = true;
-        }
-
-        public void share() { isShared = true; }
-
-        public void disable(){
-            isEnabled = false;
-            isShared = false;
-        }
-
-        public String getTitle(){
-            return title;
-        }
-
-        public String getAuthor(){
-            return author;
-        }
-
-        public String getAuthorName(){
-            return authorName;
-        }
-
-        public String getAbsoluteURL(){
-            return absoluteURL;
-        }
-
-        public String getImageURL(){
-            return imageURL;
-        }
-
-        public String getThumbURL(){
-            return thumbURL;
-        }
-
-        public String toString(){ return imageURL; }
-
-        // changed getThumbBitmap in getBitmap to ensure conformity with two size images model (one
-        // used to thumbs, other to full size images)
-        public Bitmap getBitmap(UrlType ut) {
-            if (ut == UrlType.FULLSIZE)
-                return fullSizeBitmap;
-            else
-                return thumbBitmap;
-        }
-
-        public FlickrImage setBitmap(Bitmap b, UrlType ut){
-            if (ut == UrlType.FULLSIZE)
-                this.fullSizeBitmap = b;
-            else
-                this.thumbBitmap = b;
-            return this;
-        }
-
-        public void setAbsoluteURL(String absoluteURL){
-            this.absoluteURL = absoluteURL;
-        }
-
-        public boolean equals(FlickrImage other){
-            return this.imageURL.equals(other.imageURL);
-        }
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(title);
-            dest.writeString(imageURL);
-            dest.writeString(thumbURL);
-            dest.writeValue(thumbBitmap);
-        }
-
-        public static final Creator<FlickrImage> CREATOR = new Creator<FlickrImage>() {
-            @Override
-            public FlickrImage createFromParcel(Parcel in) {
-                return new FlickrImage(in);
-            }
-
-            @Override
-            public FlickrImage[] newArray(int size) {
-                return new FlickrImage[size];
-            }
-        };
-    }
-
     public void setMVC(MVC mvc){
         this.mvc = mvc;
     }
 
-    public void storeSearchResults(ArrayList<FlickrImage> result){
+    public void store(ArrayList<FlickrImage> result){
+        if (imagesList != null)
+            oldImagesList = new ArrayList<>(imagesList);
         imagesList = result;
         mvc.forEachView(View::onModelChanged);
     }
 
-    public void updateImage(FlickrImage image){
-        //controllo imageList!=null perchè se faccio una nuova ricerca
-        //mentre sta scaricando i thumb di quella precedente imageList
-        //vale null e mi dà errore quando richiama updateImage
-        if(imagesList != null) {
-            for (int i = 0; i < imagesList.size(); i++) {
-                if (imagesList.get(i).equals(image)) {
-                    imagesList.set(i, image);
-                    mvc.forEachView(View::onModelChanged);
-                    break;
-                }
-            }
-        }
+    public void restore(){
+        if (oldImagesList != null)
+            store(new ArrayList<>(oldImagesList));
     }
+
+    // controllo imageList != null perchè se faccio una nuova ricerca
+    // mentre sta scaricando i thumb di quella precedente imageList
+    // vale null e mi dà errore quando richiama updateImage
+
+    public void updateImage(FlickrImage image){ get(OperationType.UPDATE, null, image); }
 
     // added a method that returns the FlickrImage object from local store. The method is used
     // whenever storing the whole FlickrImage object is too wasteful. Thus only a String is used
     // to point to a FlickrImage in the store.
 
-    public FlickrImage getImage(String imageURL){
-        if(imagesList != null) {
-            for (int i = 0; i < imagesList.size(); i++) {
-                if (imagesList.get(i).getImageURL().equals(imageURL)) {
-                    return imagesList.get(i);
-                }
-            }
-        }
-        return null;
-    }
+    public FlickrImage getImage(String imageURL){ return get(OperationType.GET_FROM_URL, imageURL, null);  }
+
 
     // used to get the selected image (i.e. when the image has to be enlarged)
     // the selected image is disabled when calling this method
 
-    public FlickrImage getEnabled(){
-        if(imagesList != null) {
-            for (int i = 0; i < imagesList.size(); i++) {
-                if (imagesList.get(i).isEnbled()) {
-                    return imagesList.get(i);
-                }
-            }
-        }
-        return null;
-    }
+    public FlickrImage getEnabled(){ return get(OperationType.GET_ENABLED, null, null); }
 
-    public FlickrImage getShared(){
-        if(imagesList != null) {
-            for (int i = 0; i < imagesList.size(); i++) {
-                if (imagesList.get(i).isShared()) {
-                    return imagesList.get(i);
-                }
-            }
-        }
-        return null;
-    }
+    public FlickrImage getShared(){ return get(OperationType.GET_SHARED, null, null); }
 
     // used to disable all images from the list, once the ImageFragment is closed
 
-    public void reset(){
-        if(imagesList != null) {
-            for (int i = 0; i < imagesList.size(); i++) {
-                imagesList.get(i).disable();
+    public void reset(){ get(OperationType.RESET, null, null); }
+
+    // enumeration is used to know which type of operation is required
+
+    private enum OperationType {
+        GET_ENABLED,
+        GET_SHARED,
+        GET_FROM_URL,
+        UPDATE,
+        RESET
+    }
+
+    // utility method used to iterate model
+
+    private FlickrImage get(OperationType ot, String imageURL, FlickrImage newimage){
+        if (imagesList != null) {
+            for (FlickrImage image : imagesList) {
+                if (ot == OperationType.GET_ENABLED && image.isEnbled() || ot == OperationType.GET_SHARED && image.isShared())
+                    return image;
+                else if (ot == OperationType.GET_FROM_URL && image.getImageURL().equals(imageURL))
+                    return image;
+                else if (ot == OperationType.UPDATE && image.equals(newimage)) {
+                    imagesList.set(imagesList.indexOf(image), newimage);
+                    mvc.forEachView(View::onModelChanged);
+                    break;
+                } else if (ot == OperationType.RESET)
+                    image.disable();
             }
+
         }
+        return null;
     }
 
     public List<FlickrImage> getSearchResults(){
@@ -234,9 +108,7 @@ public class Model {
         return null;
     }
 
-
     public void clearModel(){
         imagesList = null;
     }
-
 }

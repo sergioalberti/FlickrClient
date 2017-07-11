@@ -29,6 +29,7 @@ import java.util.List;
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
+import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
 
 import static android.support.v4.content.FileProvider.getUriForFile;
@@ -37,16 +38,23 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
     private MVC mvc;
     private SearchAdapter searchAdapter = null;
 
-    private static final String SHARE = "Condividi";
     private static final String SEARCH_BY_AUTHOR = "Altre immagini di  ";;
+
+    // following field is public - it's even used in ImageFragment to use the same share intent
+
+    public static final String SHARE = "Condividi";
+
+    // the TAG is used to point to the fragment from ImageFragment to use the same share intent
+
+    public final static String TAG = SearchFragment.class.getName();
 
     public SearchFragment(){
     }
 
-    private class SearchAdapter extends ArrayAdapter<Model.FlickrImage> {
-        private List<Model.FlickrImage> imagesList;
+    private class SearchAdapter extends ArrayAdapter<FlickrImage> {
+        private List<FlickrImage> imagesList;
 
-        private SearchAdapter(List<Model.FlickrImage> fi) {
+        private SearchAdapter(List<FlickrImage> fi) {
             super(getActivity(), R.layout.fragment_search_item, fi);
             this.imagesList = fi;
         }
@@ -67,7 +75,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                 convertView = inflater.inflate(R.layout.fragment_search_item, parent, false);
             }
 
-            Model.FlickrImage image = imagesList.get(position);
+            FlickrImage image = imagesList.get(position);
 
             ImageView iv = (ImageView) convertView.findViewById(R.id.image_thumb);
             TextView tv = (TextView) convertView.findViewById(R.id.image_title);
@@ -86,12 +94,18 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
+
+        // TODO finish the restoring mechanism. Ones athors images are showed, when the user
+        // wants to come back, the previous search must be shown
+
+        mvc.model.restore();
+
         onModelChanged();
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Model.FlickrImage selectedImage = (Model.FlickrImage)getListView().getItemAtPosition(position);
+                FlickrImage selectedImage = (FlickrImage)getListView().getItemAtPosition(position);
 
                 // all images in the local store are disabled, only the selected one is enabled
 
@@ -118,7 +132,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         super.onCreateContextMenu(menu, v, menuInfo);
 
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) menuInfo;
-        Model.FlickrImage selectedImage = (Model.FlickrImage)getListView().getItemAtPosition(acmi.position);
+        FlickrImage selectedImage = (FlickrImage)getListView().getItemAtPosition(acmi.position);
 
         menu.setHeaderTitle(selectedImage.getTitle());
         menu.add(SHARE);
@@ -129,7 +143,18 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
     public boolean onContextItemSelected(MenuItem item)
     {
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-        Model.FlickrImage selectedImage = (Model.FlickrImage)getListView().getItemAtPosition(acmi.position);
+
+        // this trick is used to know whether the invocations comes from search or image fragment
+
+        FlickrImage selectedImage;
+        if (acmi != null)
+            // the invocation comes from search fragment through context menu
+
+            selectedImage = (FlickrImage)getListView().getItemAtPosition(acmi.position);
+        else
+            // the invocation comes from image fragment through action menu
+
+            selectedImage = mvc.model.getEnabled();
 
         if (item.getTitle().equals(SHARE)){
             File imagePath = new File(getActivity().getFilesDir(), "images");
@@ -145,12 +170,13 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
             mvc.controller.callDownloadService(getActivity(), selectedImage, Model.UrlType.FULLSIZE);
 
+            onModelChanged();
+
             // the view will save downloaded bitmap and show the share intent once the download is
             // finished. If the image was just downloaded, the method will not download it from
             // sketch
         } else {
-            // search bu athor
-
+            // search by athor
             mvc.controller.clearPreviousSearch();
 
             mvc.controller.callSearchService(getActivity(), mvc.controller.SEARCH_BY_AUTHOR, null, selectedImage.getAuthor());
@@ -160,34 +186,42 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         return true;
      }
 
-
     @Override @UiThread
     public void onModelChanged() {
-        final List<Model.FlickrImage> fiList = mvc.model.getSearchResults();
-
-        if(fiList != null){
-            if(searchAdapter == null) {
-                searchAdapter = new SearchAdapter(fiList);
-                setListAdapter(searchAdapter);
-                setListShown(true); //removes loading spinner and shows the list
-            }
-            else{
-                searchAdapter.updateSearchResults();
-                searchAdapter.notifyDataSetChanged();
-            }
-        }
-        else{
-            if(searchAdapter != null)
-                searchAdapter.clear();
-        }
-
         // checking whenever call to this method was invoked to show share intent
 
-        Model.FlickrImage selectedImage = mvc.model.getShared();
+        FlickrImage selectedImage = mvc.model.getShared();
 
+        if (selectedImage == null) {
+            // the call was made after a search was required (we are sure of that because the model
+            // is reset in a new search; thus image labeled as shared couldn't exist)
+
+            // we are ready to perform actions to show the new search
+
+            final List<FlickrImage> fiList = mvc.model.getSearchResults();
+
+            if(fiList != null){
+                if(searchAdapter == null) {
+                    searchAdapter = new SearchAdapter(fiList);
+                    setListAdapter(searchAdapter);
+                    setListShown(true); //removes loading spinner and shows the list
+                }
+                else{
+                    searchAdapter.updateSearchResults();
+                    searchAdapter.notifyDataSetChanged();
+                }
+            }
+            else{
+                if(searchAdapter != null)
+                    searchAdapter.clear();
+            }
+        }
         // showing share intent
 
-        if (selectedImage != null && !selectedImage.getAbsoluteURL().equals("") && selectedImage.getBitmap(Model.UrlType.FULLSIZE) != null) {
+        else if (selectedImage != null && !selectedImage.getAbsoluteURL().equals("") && selectedImage.getBitmap(Model.UrlType.FULLSIZE) != null) {
+            // since we are here, the onModelChanged was invoked when the DownloadTask has ended
+            // to download the full size image after a shared intent invocation attempt
+
             try {
                 File newFile = new File(selectedImage.getAbsoluteURL());
                 Uri contentUri = getUriForFile(getActivity(), "it.univr.android.flickrclient", newFile);

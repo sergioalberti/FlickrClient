@@ -17,7 +17,6 @@ import it.univr.android.flickrclient.R;
 
 public class PhoneView extends FrameLayout implements View {
     private MVC mvc;
-    private static final String SHARE = "Condividi";
 
     public PhoneView(Context context) {
         super(context);
@@ -65,7 +64,7 @@ public class PhoneView extends FrameLayout implements View {
         getFragmentManager()
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .replace(R.id.phone_view, new SearchFragment())
+                .replace(R.id.phone_view, new SearchFragment(), SearchFragment.TAG)
                 .addToBackStack(null)
                 .commit();
     }

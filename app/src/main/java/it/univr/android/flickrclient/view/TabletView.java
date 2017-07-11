@@ -81,7 +81,7 @@ public class TabletView extends LinearLayout implements View {
             getFragmentManager()
                     .beginTransaction()
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .replace(R.id.search_fragment, new SearchFragment())
+                    .replace(R.id.search_fragment, new SearchFragment(), SearchFragment.TAG)
                     .addToBackStack(null)
                     .commit();
 

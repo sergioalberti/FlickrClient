@@ -31,6 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
+import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
 
 public class SearchService extends IntentService {
@@ -70,8 +71,8 @@ public class SearchService extends IntentService {
                 String searchType = (String) intent.getSerializableExtra(SAVED_TYPE);
                 String author = (String) intent.getSerializableExtra(SAVED_AUTHOR);
 
-                ArrayList<Model.FlickrImage> result = flickrSearch(searchType, searchKey, author);
-                mvc.model.storeSearchResults(result);
+                ArrayList<FlickrImage> result = flickrSearch(searchType, searchKey, author);
+                mvc.model.store(result);
                 mvc.controller.killWorkingTasks();
                 mvc.controller.callDownloadTask(result, Model.UrlType.THUMB);
                 break;
@@ -79,8 +80,8 @@ public class SearchService extends IntentService {
     }
 
     @WorkerThread
-    private ArrayList<Model.FlickrImage> flickrSearch(String searchType, String searchKey, String author){
-        ArrayList<Model.FlickrImage> response = new ArrayList<>();
+    private ArrayList<FlickrImage> flickrSearch(String searchType, String searchKey, String author){
+        ArrayList<FlickrImage> response = new ArrayList<>();
 
         try {
             String key;
@@ -135,7 +136,7 @@ public class SearchService extends IntentService {
                 owner = nnm.getNamedItem("owner");
                 owner_name = nnm.getNamedItem("ownername");
                 if (title != null && url_z != null && url_s != null)
-                    response.add(new Model.FlickrImage(title.getTextContent(), owner.getTextContent(), url_z.getTextContent(), url_s.getTextContent(), owner_name.getTextContent()));
+                    response.add(new FlickrImage(title.getTextContent(), owner.getTextContent(), url_z.getTextContent(), url_s.getTextContent(), owner_name.getTextContent()));
             }
         }
         catch(IOException | ParserConfigurationException | SAXException e){

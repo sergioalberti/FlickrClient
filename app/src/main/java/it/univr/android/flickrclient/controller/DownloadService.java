@@ -7,7 +7,7 @@ import android.support.annotation.WorkerThread;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
-import it.univr.android.flickrclient.model.Model;
+import it.univr.android.flickrclient.model.FlickrImage;
 
 public class DownloadService extends IntentService {
     private static final String ACTION_FLICKR_DOWNLOAD = "download";
@@ -18,7 +18,7 @@ public class DownloadService extends IntentService {
         super("douwnload service");
     }
 
-    static void doDownload(Context context, Model.FlickrImage image){
+    static void doDownload(Context context, FlickrImage image){
         Intent intent = new Intent(context, DownloadService.class);
         intent.setAction(ACTION_FLICKR_DOWNLOAD);
         intent.putExtra(SAVED_IMAGE_URL, image.getImageURL());

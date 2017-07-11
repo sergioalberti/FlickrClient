@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import it.univr.android.flickrclient.MVC;
+import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
 import it.univr.android.flickrclient.view.View;
 
@@ -58,7 +59,7 @@ public class Controller {
     }
 
     @UiThread
-    public void callDownloadService(Context context, Model.FlickrImage image, Model.UrlType ut){
+    public void callDownloadService(Context context, FlickrImage image, Model.UrlType ut){
         DownloadService.doDownload(context, image);
     }
 
@@ -72,22 +73,22 @@ public class Controller {
     }
 
     @WorkerThread
-    public void callDownloadTask(Model.FlickrImage image, Model.UrlType ut){
-        callDownloadTask(new ArrayList<Model.FlickrImage>(Collections.singletonList(image)), ut);
+    public void callDownloadTask(FlickrImage image, Model.UrlType ut){
+        callDownloadTask(new ArrayList<FlickrImage>(Collections.singletonList(image)), ut);
     }
 
     @WorkerThread
-    public void callDownloadTask(ArrayList<Model.FlickrImage> images, Model.UrlType ut) {
+    public void callDownloadTask(ArrayList<FlickrImage> images, Model.UrlType ut) {
         executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        CompletionService<Model.FlickrImage> completionService =
+        CompletionService<FlickrImage> completionService =
                 new ExecutorCompletionService<>(executor);
 
-        for(Model.FlickrImage image : images)
+        for(FlickrImage image : images)
             completionService.submit(new DownloadTask(image, ut));
 
         try{
             for(int i=0; i<images.size(); i++) {
-                Future<Model.FlickrImage> f = completionService.take();
+                Future<FlickrImage> f = completionService.take();
                 mvc.model.updateImage(f.get());
             }
         }
@@ -95,7 +96,8 @@ public class Controller {
             Thread.currentThread().interrupt();
         }
         catch(ExecutionException e){
-            Log.d("DownloadTask", "execution exception " + e.getMessage());
+            Log.d("DownloadTask", e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -123,19 +125,17 @@ public class Controller {
     // changed ThumbTask to DownloadTask due to conformity with both thumb size images and original
     // images that have to be downloaded
 
-    private class DownloadTask implements Callable<Model.FlickrImage> {
-        private final Model.FlickrImage image;
+    private class DownloadTask implements Callable<FlickrImage> {
+        private final FlickrImage image;
         private final Model.UrlType ut;
 
-        public DownloadTask(Model.FlickrImage image, Model.UrlType ut){
+        public DownloadTask(FlickrImage image, Model.UrlType ut){
             this.image = image;
             this.ut = ut;
-
-
         }
 
         @Override
-        public Model.FlickrImage call() {
+        public FlickrImage call() {
             if (ut == Model.UrlType.FULLSIZE)
                 return image.setBitmap(downloadBitmapUtility(image.getImageURL()), Model.UrlType.FULLSIZE);
             else

@@ -4,12 +4,10 @@ package it.univr.android.flickrclient.view;
  * Created by user on 5/16/17.
  */
 
+import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
-import android.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -34,6 +32,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
     @Override @UiThread
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(false);
     }
 
     @Override @UiThread
