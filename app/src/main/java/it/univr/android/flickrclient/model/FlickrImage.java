@@ -57,10 +57,9 @@ public class FlickrImage implements Parcelable {
         isShared = true;
     }
 
-    public void disable() {
-        isEnabled = false;
-        isShared = false;
-    }
+    public void disable() { isEnabled = false; }
+
+    public void unshare() { isShared = false; }
 
     public String getTitle() {
         return title;

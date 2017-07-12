@@ -267,7 +267,8 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                 intent.putExtra(Intent.EXTRA_STREAM, contentUri);
                 startActivity(Intent.createChooser(intent, SHARE));
 
-                selectedImage.disable();
+                selectedImage.unshare();
+
             } catch (Exception e) {
                 Log.d("ShareBitmap", "error " + e.getMessage());
             }

@@ -91,8 +91,10 @@ public class Model implements Iterable<FlickrImage> {
                     imagesList.set(imagesList.indexOf(image), newimage);
                     mvc.forEachView(View::onModelChanged);
                     break;
-                } else if (ot == OperationType.RESET)
+                } else if (ot == OperationType.RESET) {
                     image.disable();
+                    image.unshare();
+                }
             }
 
         }
