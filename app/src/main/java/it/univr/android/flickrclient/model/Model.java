@@ -36,16 +36,13 @@ public class Model implements Iterable<FlickrImage> {
     }
 
     public void store(ArrayList<FlickrImage> result){
-        if (imagesList != null)
-            oldImagesList = new ArrayList<>(imagesList);
         imagesList = result;
         mvc.forEachView(View::onModelChanged);
     }
 
-    public void restore(){
-        if (oldImagesList != null)
-            store(new ArrayList<>(oldImagesList));
-    }
+    public void backup(){ oldImagesList = imagesList; }
+
+    public void restore() { imagesList = oldImagesList; }
 
     // controllo imageList != null perchè se faccio una nuova ricerca
     // mentre sta scaricando i thumb di quella precedente imageList
@@ -110,5 +107,10 @@ public class Model implements Iterable<FlickrImage> {
 
     public void clearModel(){
         imagesList = null;
+    }
+
+    public void purgeModel() {
+        clearModel();
+        oldImagesList = null;
     }
 }

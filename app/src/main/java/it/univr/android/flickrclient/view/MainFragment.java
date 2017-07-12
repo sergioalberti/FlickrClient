@@ -4,10 +4,15 @@ package it.univr.android.flickrclient.view;
  * Created by user on 5/16/17.
  */
 
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -32,7 +37,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
     @Override @UiThread
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(false);
+        setHasOptionsMenu(true);
     }
 
     @Override @UiThread
@@ -95,5 +100,35 @@ public class MainFragment extends Fragment implements AbstractFragment {
     @Override
     public void onModelChanged() {
         //nothing to do
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        inflater.inflate(R.menu.fragment_main_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.menu_info) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+            builder.setMessage("Sergio Alberti, Adam Seewald\n" +
+                               "Giugno/Luglio 2017\n" +
+                               "versione 1.0")
+                    .setTitle("About")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) { }
+                    })
+                    .setIcon(R.drawable.vector_info_black);
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+
+            return true;
+        } else
+            return super.onOptionsItemSelected(item);
     }
 }

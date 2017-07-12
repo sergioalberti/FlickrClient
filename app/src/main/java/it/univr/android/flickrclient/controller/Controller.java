@@ -48,7 +48,11 @@ public class Controller {
 
     @UiThread
     public void callSearchService(Context context, String searchType, String key){
-        mvc.model.clearModel();
+        // if this method is invoked, a new search is required (a search from previous search happens
+        // only if the user make a search by author from a current search). Thus the model has to be
+        // hard reset by purgeModel invocation that clears even oldImageList
+
+        mvc.model.purgeModel();
         SearchService.doFlickrSearch(context, searchType, key, null);
     }
 

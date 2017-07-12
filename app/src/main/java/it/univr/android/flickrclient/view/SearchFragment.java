@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.annotation.UiThread;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,8 +49,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
     public final static String TAG = SearchFragment.class.getName();
 
-    public SearchFragment(){
-    }
+    public SearchFragment() { }
 
     private class SearchAdapter extends ArrayAdapter<FlickrImage> {
         private List<FlickrImage> imagesList;
@@ -95,11 +95,6 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         super.onActivityCreated(savedInstanceState);
         mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
 
-        // TODO finish the restoring mechanism. Ones athors images are showed, when the user
-        // wants to come back, the previous search must be shown
-
-        mvc.model.restore();
-
         onModelChanged();
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -117,13 +112,6 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             }
         });
 
-        //getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-        //    @Override
-        //    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        //        Toast.makeText(getActivity(), "Item " + position + " was longclicked", Toast.LENGTH_SHORT).show();
-        //        return true;
-        //    }
-        //});
         registerForContextMenu(this.getListView());
     }
 
@@ -136,12 +124,24 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
         menu.setHeaderTitle(selectedImage.getTitle());
         menu.add(SHARE);
-        menu.add(SEARCH_BY_AUTHOR + selectedImage.getAuthorName());
+
+        // first we check whenever this search is a search by author (by checking if the AuthorName
+        // is null - see the model's implementation), if so, another search by author is senseless
+        // so we omit "search by author" menu voice
+
+        if (selectedImage.getAuthorName() != null)
+            menu.add(SEARCH_BY_AUTHOR + selectedImage.getAuthorName());
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem item)
-    {
+    public boolean onContextItemSelected(MenuItem item) {
+        // a very strange behaviour may happen: the screen is rotated while an image is open in
+        // ImageFragment, after, this invocation is done. Thus mvc pointer is not updated and we
+        // need to update it manually (since it is updated only on the current fragment)
+
+        if (mvc == null)
+            mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
+
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 
         // this trick is used to know whether the invocations comes from search or image fragment
@@ -176,7 +176,10 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             // finished. If the image was just downloaded, the method will not download it from
             // sketch
         } else {
-            // search by athor
+            // saving previous search session
+
+            mvc.model.backup();
+
             mvc.controller.clearPreviousSearch();
 
             mvc.controller.callSearchService(getActivity(), mvc.controller.SEARCH_BY_AUTHOR, null, selectedImage.getAuthor());
@@ -184,7 +187,33 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             mvc.controller.showSearchResults();
         }
         return true;
-     }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(getView() == null){
+            return;
+        }
+
+        getView().setFocusableInTouchMode(true);
+        getView().requestFocus();
+        getView().setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+
+                if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK){
+                    // back button clicked, resuming previous search
+
+                    mvc.model.restore();
+
+                    onModelChanged();
+                }
+                return false;
+            }
+        });
+    }
 
     @Override @UiThread
     public void onModelChanged() {

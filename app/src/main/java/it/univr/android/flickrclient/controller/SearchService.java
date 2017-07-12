@@ -87,17 +87,17 @@ public class SearchService extends IntentService {
             String key;
             String CONNECTION_URL;
 
-            if(searchType.equals(mvc.controller.SEARCH_BY_KEY)) {
+            if(searchType.equals(Controller.SEARCH_BY_KEY)) {
                 key = URLEncoder.encode(searchKey, "UTF-8");
                 CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
                         "photos.search&api_key=" + API_KEY + "&text=" + key +
                         "&extras=url_z,url_s,owner_name,&per_page=50";
             }
-            else if(searchType.equals(mvc.controller.SEARCH_LAST_UPLOADS))
+            else if(searchType.equals(Controller.SEARCH_LAST_UPLOADS))
                 CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
                         "photos.getRecent&api_key=" + API_KEY + "&extras=url_z,url_s,owner_name," +
                         "&per_page=50";
-            else if(searchType.equals(mvc.controller.SEARCH_MOST_POPULAR))
+            else if(searchType.equals(Controller.SEARCH_MOST_POPULAR))
                 CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
                         "interestingness.getList&api_key=" + API_KEY + "&extras=url_z,url_s," +
                         "owner_name,&per_page=50";
@@ -105,7 +105,7 @@ public class SearchService extends IntentService {
             else
                 CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
                         "people.getPublicPhotos&api_key=" + API_KEY + "&user_id=" + author +
-                        "&extras=url_z,url_s,owner_name,&per_page=50";
+                        "&extras=url_z,url_s,&per_page=50";
 
             URL url = new URL(CONNECTION_URL);
             URLConnection conn = url.openConnection();
@@ -135,8 +135,10 @@ public class SearchService extends IntentService {
                 url_s = nnm.getNamedItem("url_s");
                 owner = nnm.getNamedItem("owner");
                 owner_name = nnm.getNamedItem("ownername");
-                if (title != null && url_z != null && url_s != null)
+                if (title != null && url_z != null && url_s != null && owner != null && owner_name != null)
                     response.add(new FlickrImage(title.getTextContent(), owner.getTextContent(), url_z.getTextContent(), url_s.getTextContent(), owner_name.getTextContent()));
+                else if (title != null && url_z != null && url_s != null && owner != null)
+                    response.add(new FlickrImage(title.getTextContent(), owner.getTextContent(), url_z.getTextContent(), url_s.getTextContent(), null));
             }
         }
         catch(IOException | ParserConfigurationException | SAXException e){

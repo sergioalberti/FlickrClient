@@ -34,12 +34,6 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
-        mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
-        image = mvc.model.getEnabled();
-        if(image != null && savedInstanceState != null && !savedInstanceState.isEmpty()){
-            savedInstanceState.putString(ENABLED_IMAGE_URL, image.getImageURL());
-        }
     }
 
     // following two methods used for share item on action bar
@@ -82,17 +76,13 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if(savedInstanceState != null && !savedInstanceState.isEmpty())
-            image = mvc.model.getImage(savedInstanceState.getString(ENABLED_IMAGE_URL));
+        mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
+        image = mvc.model.getEnabled();
 
-        // maybe the savedIstanceState is still empty, so a nullity check is made. The image could
-        // have been downloaded by another ImageFragment call previously, in such case a new download
-        // is wasteful (since full image data are stored)
-
-        if (image != null && image.getBitmap(Model.UrlType.FULLSIZE) == null)
+        if (image != null)
             mvc.controller.callDownloadService(getActivity(), image, Model.UrlType.FULLSIZE);
 
-        //onModelChanged();
+        onModelChanged();
     }
 
     @Override
