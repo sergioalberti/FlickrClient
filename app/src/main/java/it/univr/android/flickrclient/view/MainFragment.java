@@ -31,6 +31,8 @@ public class MainFragment extends Fragment implements AbstractFragment {
     private Button searchButton;
     private Spinner searchSpinner;
 
+    public final static String TAG = MainFragment.class.getName();
+
     public MainFragment(){
     }
 
@@ -104,15 +106,27 @@ public class MainFragment extends Fragment implements AbstractFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        menu.clear();
-        inflater.inflate(R.menu.fragment_main_menu, menu);
+        // the main menu with info has to be shown only on the first page. Thus we have to check
+        // if there is another fragment shown (or if it lays in the back stack) different from the
+        // MainFragment or TabletFragment.
+
+        // if the SearchFragment is shown - it means that a new
+        // search has been done. No info menu ha to be shown.
+
+        // if the SearchFragment is in the back stack, ImageFragment is shown or another search is
+        // done based on the author of one of the images of previous search. Thus no menu info
+        // should be shown neither now.
+
+        if (getFragmentManager().findFragmentByTag(SearchFragment.TAG) == null) {
+            super.onCreateOptionsMenu(menu, inflater);
+            menu.clear();
+            inflater.inflate(R.menu.fragment_main_menu, menu);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menu_info) {
-
+        if (getFragmentManager().findFragmentByTag(SearchFragment.TAG) == null && item.getItemId() == R.id.menu_info) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
             builder.setMessage("Sergio Alberti, Adam Seewald\n" +
@@ -122,7 +136,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) { }
                     })
-                    .setIcon(R.drawable.vector_info_black);
+                    .setIcon(R.drawable.info_dark);
 
             AlertDialog dialog = builder.create();
             dialog.show();

@@ -17,23 +17,10 @@ import it.univr.android.flickrclient.R;
 
 public class TabletView extends LinearLayout implements View {
     private MVC mvc;
-    private SearchFragment searchFragment;
-    //private boolean imageFragmentActive = false;
 
-    private static final String SHARE = "Condividi";
+    public TabletView(Context context) { super(context); }
 
-    public TabletView(Context context) {
-        super(context);
-        getFragmentManager().beginTransaction().add(R.id.main_fragment, new MainFragment()).commit();
-        getFragmentManager().beginTransaction().add(R.id.search_fragment, new SearchFragment()).commit();
-    }
-
-    public TabletView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        getFragmentManager().beginTransaction().add(R.id.main_fragment, new MainFragment()).commit();
-        getFragmentManager().beginTransaction().add(R.id.search_fragment, new SearchFragment()).commit();
-    }
-
+    public TabletView(Context context, AttributeSet attrs) { super(context, attrs);  }
     private FragmentManager getFragmentManager(){
         return ((Activity) getContext()).getFragmentManager();
     }
@@ -52,10 +39,16 @@ public class TabletView extends LinearLayout implements View {
         mvc = ((FlickrApplication) getContext().getApplicationContext()).getMvc();
         mvc.register(this);
 
-        //nascondo il loading spinner al primo avvio (su tablet)
-        searchFragment = ((SearchFragment)getSearchFragment());
-        searchFragment.setEmptyText("Nothing to show");
-        searchFragment.setListShown(true);
+        if (getSearchFragment() == null) {
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.main_fragment, new MainFragment(), MainFragment.TAG)
+                    .commit();
+            getFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.search_fragment, new TabletFragment(), TabletFragment.TAG)
+                    .commit();
+        }
     }
 
     @Override
@@ -67,43 +60,26 @@ public class TabletView extends LinearLayout implements View {
     @Override
     public void onModelChanged() {
         getMainFragment().onModelChanged();
-
-        //chiamo onModelChanged sul SearchFragment solo se
-        //non ho attivo l'ImageFragment
-        //if(!imageFragmentActive)
-            getSearchFragment().onModelChanged();
+        getSearchFragment().onModelChanged();
     }
 
     public void showSearchResults(){
-        //se è attivo l'ImageFragment per mostrare i risultati
-        //della ricerca devo sostituirlo con un SearchFragment
-        //if(imageFragmentActive){
-            getFragmentManager()
-                    .beginTransaction()
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .replace(R.id.search_fragment, new SearchFragment(), SearchFragment.TAG)
-                    .addToBackStack(null)
-                    .commit();
-
-            //imageFragmentActive = false;
-        //}
-    }
-
-    public void showFullImage(){
-        //imageFragmentActive = true;
-
         getFragmentManager()
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .replace(R.id.search_fragment, new ImageFragment())
+                .replace(R.id.search_fragment, new SearchFragment(), SearchFragment.TAG)
                 .addToBackStack(null)
                 .commit();
     }
 
-    public void clearPreviousSearch(){
-        //if(!imageFragmentActive)
-            //searchFragment.setListShown(false);
-
-        searchFragment.clearAdapter();
+    public void showFullImage(){
+        getFragmentManager()
+                .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.search_fragment, new ImageFragment(), ImageFragment.TAG)
+                .addToBackStack(null)
+                .commit();
     }
+
+    public void clearPreviousSearch() { }
 }

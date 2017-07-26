@@ -43,7 +43,7 @@ public class PhoneView extends FrameLayout implements View {
         if(getFragment() == null){
             getFragmentManager()
                     .beginTransaction()
-                    .add(R.id.phone_view, new MainFragment())
+                    .add(R.id.phone_view, new MainFragment(), MainFragment.TAG)
                     .commit();
         }
     }
@@ -73,7 +73,7 @@ public class PhoneView extends FrameLayout implements View {
         getFragmentManager()
                 .beginTransaction()
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .replace(R.id.phone_view, new ImageFragment())
+                .replace(R.id.phone_view, new ImageFragment(), ImageFragment.TAG)
                 .addToBackStack(null)
                 .commit();
     }

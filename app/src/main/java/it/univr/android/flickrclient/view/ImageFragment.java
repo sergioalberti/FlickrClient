@@ -25,7 +25,8 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     private ImageView iv;
 
     public static final int ANIMATION_DURATION = 150;
-    public static final String ENABLED_IMAGE_URL = "enabled_image_url";
+
+    public final static String TAG = ImageFragment.class.getName();
 
     public ImageFragment(){
     }
@@ -41,6 +42,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
         inflater.inflate(R.menu.fragment_image_menu, menu);
     }
 
