@@ -6,6 +6,7 @@ package it.univr.android.flickrclient.view;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
@@ -57,9 +58,18 @@ public class MainFragment extends Fragment implements AbstractFragment {
         searchSpinner.setAdapter(spinnerAdapter);
 
         searchButton.setOnClickListener(__ -> {
-            String selectedOption = searchSpinner.getSelectedItem().toString();
+            // fragments from previous search are emptied
+
+            FragmentManager fm = getFragmentManager();
+            fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
+            // the old model is cleared
 
             mvc.controller.clearPreviousSearch();
+
+            // a new search is made
+
+            String selectedOption = searchSpinner.getSelectedItem().toString();
 
             if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY))
                 mvc.controller.callSearchService(getActivity(), selectedOption, searchKey.getText().toString());

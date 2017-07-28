@@ -5,17 +5,25 @@ import android.animation.ObjectAnimator;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
+import it.univr.android.flickrclient.controller.Controller;
+import it.univr.android.flickrclient.model.Comment;
 import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
 
@@ -23,6 +31,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     private MVC mvc;
     private FlickrImage image;
     private ImageView iv;
+    private ListView lv;
 
     public static final int ANIMATION_DURATION = 150;
 
@@ -65,6 +74,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_image, container, false);
         iv = (ImageView) view.findViewById(R.id.image_box);
+        lv = (ListView) view.findViewById(R.id.list_view);
 
         return view;
     }
@@ -81,8 +91,15 @@ public class ImageFragment extends Fragment implements AbstractFragment {
         mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
         image = mvc.model.getEnabled();
 
-        if (image != null)
+        if (image != null) {
+            // searching for comments
+
+            mvc.controller.callSearchService(getActivity(), Controller.SEARCH_COMMENTS, image.getId());
+
+            // downloading full size image
+
             mvc.controller.callDownloadService(getActivity(), image, Model.UrlType.FULLSIZE);
+        }
 
         onModelChanged();
     }
@@ -115,6 +132,28 @@ public class ImageFragment extends Fragment implements AbstractFragment {
 
             SearchFragment sf = (SearchFragment) getFragmentManager().findFragmentByTag(SearchFragment.TAG);
             sf.onModelChanged();
+        }
+
+        // showing comments if available on specific image
+
+        if (image != null && image.getComments() != null && lv.getCount() == 0) {
+            ArrayList<Comment> comments = image.getComments();
+            ArrayAdapter adapter = new ArrayAdapter(this.getActivity(), android.R.layout.simple_list_item_2, android.R.id.text1, comments) {
+                @Override
+                public View getView(int position, View convertView, ViewGroup parent) {
+                    View view = super.getView(position, convertView, parent);
+                    TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+                    TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+
+                    text1.setText(comments.get(position).getAuthorName());
+                    text2.setText(Html.fromHtml(comments.get(position).getComment()));
+                    return view;
+                }
+            };
+
+            lv.setAdapter(adapter);
+
+            ObjectAnimator.ofFloat(lv, "alpha", 0f, 1f).setDuration(ANIMATION_DURATION * 3).start();
         }
     }
 }

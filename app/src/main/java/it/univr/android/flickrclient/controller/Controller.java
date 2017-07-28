@@ -39,6 +39,7 @@ public class Controller {
     public static final String SEARCH_MOST_POPULAR = "Most Popular";
     public static final String SEARCH_LAST_UPLOADS = "Last Uploads";
     public static final String SEARCH_BY_AUTHOR = "Author";
+    public static final String SEARCH_COMMENTS = "Comments";
 
 
     @UiThread
@@ -47,19 +48,17 @@ public class Controller {
     }
 
     @UiThread
-    public void callSearchService(Context context, String searchType, String key){
+    public void callSearchService(Context context, String searchType, String data){
         // if this method is invoked, a new search is required (a search from previous search happens
         // only if the user make a search by author from a current search). Thus the model has to be
         // hard reset by purgeModel invocation that clears even oldImageList
 
-        mvc.model.purgeModel();
-        SearchService.doFlickrSearch(context, searchType, key, null);
-    }
+        if (searchType.equals(SEARCH_BY_AUTHOR))
+            mvc.model.clearModel();
+        else if (!searchType.equals(SEARCH_COMMENTS))
+            mvc.model.purgeModel();
 
-    @UiThread
-    public void callSearchService(Context context, String searchType, String key, String author){
-        mvc.model.clearModel();
-        SearchService.doFlickrSearch(context, searchType, key, author);
+        SearchService.doFlickrSearch(context, searchType, data);
     }
 
     @UiThread

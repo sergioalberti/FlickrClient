@@ -56,6 +56,7 @@ public class Model implements Iterable<FlickrImage> {
 
     public FlickrImage getImage(String imageURL){ return get(OperationType.GET_FROM_URL, imageURL, null);  }
 
+    public FlickrImage getImageFromId(String id){ return get(OperationType.GET_FROM_ID, id, null);  }
 
     // used to get the selected image (i.e. when the image has to be enlarged)
     // the selected image is disabled when calling this method
@@ -74,18 +75,21 @@ public class Model implements Iterable<FlickrImage> {
         GET_ENABLED,
         GET_SHARED,
         GET_FROM_URL,
+        GET_FROM_ID,
         UPDATE,
         RESET
     }
 
     // utility method used to iterate model
 
-    private FlickrImage get(OperationType ot, String imageURL, FlickrImage newimage){
+    private FlickrImage get(OperationType ot, String data, FlickrImage newimage){
         if (imagesList != null) {
             for (FlickrImage image : imagesList) {
                 if (ot == OperationType.GET_ENABLED && image.isEnbled() || ot == OperationType.GET_SHARED && image.isShared())
                     return image;
-                else if (ot == OperationType.GET_FROM_URL && image.getImageURL().equals(imageURL))
+                else if (ot == OperationType.GET_FROM_URL && image.getImageURL().equals(data))
+                    return image;
+                else if (ot == OperationType.GET_FROM_ID && image.getId().equals(data))
                     return image;
                 else if (ot == OperationType.UPDATE && image.equals(newimage)) {
                     imagesList.set(imagesList.indexOf(image), newimage);

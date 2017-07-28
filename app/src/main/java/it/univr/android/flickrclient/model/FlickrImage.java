@@ -4,12 +4,15 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
+
 /**
  * Created by user on 7/11/17.
  */
 public class FlickrImage implements Parcelable {
     private final String title;
     private final String author;
+    private final String id;
     private final String imageURL;
     private final String thumbURL;
     private final String authorName;
@@ -18,10 +21,12 @@ public class FlickrImage implements Parcelable {
     private Bitmap fullSizeBitmap = null;
     private boolean isEnabled = false;
     private boolean isShared = false;
+    private ArrayList<Comment> comments = null;
 
-    public FlickrImage(String title, String author, String imageURL, String thumbURL, String authorName) {
+    public FlickrImage(String title, String author, String id, String imageURL, String thumbURL, String authorName) {
         this.title = title;
         this.author = author;
+        this.id = id;
         this.imageURL = imageURL;
         this.thumbURL = thumbURL;
         this.authorName = authorName;
@@ -31,6 +36,7 @@ public class FlickrImage implements Parcelable {
     protected FlickrImage(Parcel in) {
         title = in.readString();
         author = in.readString();
+        id = in.readString();
         imageURL = in.readString();
         thumbURL = in.readString();
         authorName = in.readString();
@@ -39,6 +45,7 @@ public class FlickrImage implements Parcelable {
         fullSizeBitmap = in.readParcelable(Bitmap.class.getClassLoader());
         isEnabled = in.readByte() != 0;
         isShared = in.readByte() != 0;
+        comments = in.readParcelable(ArrayList.class.getClassLoader());
     }
 
     public boolean isEnbled() {
@@ -69,6 +76,10 @@ public class FlickrImage implements Parcelable {
         return author;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public String getAuthorName() {
         return authorName;
     }
@@ -88,6 +99,12 @@ public class FlickrImage implements Parcelable {
     public String toString() {
         return imageURL;
     }
+
+    public void setComments(ArrayList<Comment> comments) { this.comments = comments; }
+
+    public ArrayList<Comment> getComments() { return comments; }
+
+
 
     // changed getThumbBitmap in getBitmap to ensure conformity with two size images model (one
     // used to thumbs, other to full size images)
@@ -111,7 +128,7 @@ public class FlickrImage implements Parcelable {
     }
 
     public boolean equals(FlickrImage other) {
-        return this.imageURL.equals(other.imageURL);
+        return this.id.equals(other.id);
     }
 
     @Override
@@ -131,6 +148,7 @@ public class FlickrImage implements Parcelable {
         dest.writeValue(fullSizeBitmap);
         dest.writeByte((byte) (isEnabled ? 1 : 0));
         dest.writeByte((byte) (isShared ? 1 : 0));
+        dest.writeValue(comments);
     }
 
     public static final Creator<FlickrImage> CREATOR = new Creator<FlickrImage>() {

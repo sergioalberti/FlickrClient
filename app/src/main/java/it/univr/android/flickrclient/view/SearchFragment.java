@@ -107,7 +107,6 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                 mvc.model.reset();
                 selectedImage.enable();
 
-                mvc.controller.callDownloadService(getActivity(), selectedImage, Model.UrlType.FULLSIZE);
                 mvc.controller.showFullImage();
             }
         });
@@ -182,7 +181,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
             mvc.controller.clearPreviousSearch();
 
-            mvc.controller.callSearchService(getActivity(), mvc.controller.SEARCH_BY_AUTHOR, null, selectedImage.getAuthor());
+            mvc.controller.callSearchService(getActivity(), mvc.controller.SEARCH_BY_AUTHOR, selectedImage.getAuthor());
 
             mvc.controller.showSearchResults();
         }
