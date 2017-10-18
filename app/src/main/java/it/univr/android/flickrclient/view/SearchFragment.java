@@ -176,7 +176,6 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             // sketch
         } else {
             // saving previous search session
-
             mvc.model.backup();
 
             mvc.controller.clearPreviousSearch();

@@ -3,9 +3,13 @@ package it.univr.android.flickrclient.view;
 
 import android.animation.ObjectAnimator;
 import android.app.Fragment;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,6 +21,9 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 import it.univr.android.flickrclient.FlickrApplication;
@@ -26,6 +33,9 @@ import it.univr.android.flickrclient.controller.Controller;
 import it.univr.android.flickrclient.model.Comment;
 import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
+
+import static android.support.v4.content.FileProvider.getUriForFile;
+import static it.univr.android.flickrclient.view.SearchFragment.SHARE;
 
 public class ImageFragment extends Fragment implements AbstractFragment {
     private MVC mvc;
@@ -58,12 +68,20 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_share) {
-            // to preserve a saving approach, the intent that was implemented in SearchFragment is
-            // not repeated, it is simply recalled by the Fragment TAG
 
-            item.setTitle(SearchFragment.SHARE);
-            SearchFragment sf = (SearchFragment) getFragmentManager().findFragmentByTag(SearchFragment.TAG);
-            sf.onContextItemSelected(item);
+            File imagePath = new File(getActivity().getFilesDir(), "images");
+
+            if (!imagePath.exists())
+                imagePath.mkdir();
+
+            File newFile = new File(imagePath, "image_" + image.getTitle().hashCode() + ".jpg");
+
+            // downloading image
+            image.share();
+            image.setAbsoluteURL(newFile.getAbsolutePath());
+
+            mvc.controller.callDownloadService(getActivity(), image, Model.UrlType.FULLSIZE);
+            onModelChanged();
 
             return true;
         } else
@@ -126,16 +144,30 @@ public class ImageFragment extends Fragment implements AbstractFragment {
         // showing share intent
 
         else if (selectedImage != null && !selectedImage.getAbsoluteURL().equals("") && selectedImage.getBitmap(Model.UrlType.FULLSIZE) != null) {
-            // as previously even here, SearchFragment's onModelChanged invocation is recalled after
-            // we are sure that the call to this model was made after the DownloadTask has downloaded
-            // the full size bitmap that we are interested in
+            try {
+                File newFile = new File(selectedImage.getAbsoluteURL());
+                Uri contentUri = getUriForFile(getActivity(), "it.univr.android.flickrclient", newFile);
 
-            SearchFragment sf = (SearchFragment) getFragmentManager().findFragmentByTag(SearchFragment.TAG);
-            sf.onModelChanged();
+                FileOutputStream os = new FileOutputStream(newFile);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                selectedImage.getBitmap(Model.UrlType.FULLSIZE).compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                os.write(stream.toByteArray());
+                os.close();
+
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_SEND);
+                intent.setType("image/*");
+                intent.putExtra(Intent.EXTRA_STREAM, contentUri);
+                startActivity(Intent.createChooser(intent, SHARE));
+
+                selectedImage.unshare();
+
+            } catch (Exception e) {
+                Log.d("ShareBitmap", "error " + e.getMessage());
+            }
         }
 
         // showing comments if available on specific image
-
         if (image != null && image.getComments() != null && lv.getCount() == 0) {
             ArrayList<Comment> comments = image.getComments();
             ArrayAdapter adapter = new ArrayAdapter(this.getActivity(), android.R.layout.simple_list_item_2, android.R.id.text1, comments) {

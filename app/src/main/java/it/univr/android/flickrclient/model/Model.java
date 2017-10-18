@@ -4,6 +4,7 @@ package it.univr.android.flickrclient.model;
  * Created by user on 5/16/17.
  */
 
+import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import java.util.ArrayList;
@@ -17,8 +18,8 @@ import it.univr.android.flickrclient.view.View;
 @ThreadSafe
 public class Model implements Iterable<FlickrImage> {
     private MVC mvc;
-    private ArrayList<FlickrImage> imagesList = null;
-    private ArrayList<FlickrImage> oldImagesList = null;
+    private @GuardedBy("this") ArrayList<FlickrImage> imagesList = null;
+    private @GuardedBy("this") ArrayList<FlickrImage> oldImagesList = null;
 
     @Override
     public Iterator<FlickrImage> iterator() {
@@ -36,17 +37,24 @@ public class Model implements Iterable<FlickrImage> {
     }
 
     public void store(ArrayList<FlickrImage> result){
-        imagesList = result;
+        synchronized (this) {
+            imagesList = result;
+        }
+
         mvc.forEachView(View::onModelChanged);
     }
 
-    public void backup(){ oldImagesList = imagesList; }
+    public void backup() {
+        synchronized (this) {
+            oldImagesList = imagesList;
+        }
+    }
 
-    public void restore() { imagesList = oldImagesList; }
-
-    // controllo imageList != null perchè se faccio una nuova ricerca
-    // mentre sta scaricando i thumb di quella precedente imageList
-    // vale null e mi dà errore quando richiama updateImage
+    public void restore() {
+        synchronized (this) {
+            imagesList = oldImagesList;
+        }
+    }
 
     public void updateImage(FlickrImage image){ get(OperationType.UPDATE, null, image); }
 
@@ -82,7 +90,7 @@ public class Model implements Iterable<FlickrImage> {
 
     // utility method used to iterate model
 
-    private FlickrImage get(OperationType ot, String data, FlickrImage newimage){
+    private synchronized FlickrImage get(OperationType ot, String data, FlickrImage newimage){
         if (imagesList != null) {
             for (FlickrImage image : imagesList) {
                 if (ot == OperationType.GET_ENABLED && image.isEnbled() || ot == OperationType.GET_SHARED && image.isShared())
@@ -106,17 +114,21 @@ public class Model implements Iterable<FlickrImage> {
     }
 
     public List<FlickrImage> getSearchResults(){
-        if(imagesList != null)
+        if (imagesList != null)
             return Collections.synchronizedList(imagesList);
         return null;
     }
 
-    public void clearModel(){
-        imagesList = null;
+    public void clearModel() {
+        synchronized (this){
+            imagesList = null;
+        }
     }
 
     public void purgeModel() {
         clearModel();
-        oldImagesList = null;
+        synchronized (this) {
+            oldImagesList = null;
+        }
     }
 }

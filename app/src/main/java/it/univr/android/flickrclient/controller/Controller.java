@@ -86,11 +86,17 @@ public class Controller {
         CompletionService<FlickrImage> completionService =
                 new ExecutorCompletionService<>(executor);
 
-        for(FlickrImage image : images)
+        for(FlickrImage image : images){
+            if ((image.getBitmap(Model.UrlType.THUMB) != null && ut== Model.UrlType.THUMB) ||
+                (image.getBitmap(Model.UrlType.FULLSIZE) != null && ut== Model.UrlType.FULLSIZE)
+            )
+                return;
+
             completionService.submit(new DownloadTask(image, ut));
+        }
 
         try{
-            for(int i=0; i<images.size(); i++) {
+            for(int i = 0; i < images.size(); i++) {
                 Future<FlickrImage> f = completionService.take();
                 mvc.model.updateImage(f.get());
             }
