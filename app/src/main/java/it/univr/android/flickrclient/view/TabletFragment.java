@@ -1,7 +1,7 @@
 package it.univr.android.flickrclient.view;
 
 /**
- * Created by user on 5/16/17.
+ * the fragment used as holder in the TabletView
  */
 
 import android.app.Fragment;
@@ -14,8 +14,14 @@ import android.view.ViewGroup;
 import it.univr.android.flickrclient.R;
 
 public class TabletFragment extends Fragment implements AbstractFragment {
+    /**
+     * says the TabletFragment class' name
+     */
     public final static String TAG = TabletFragment.class.getName();
 
+    /**
+     * initializes the TabletFragment instance
+     */
     public TabletFragment(){ }
 
     @Override @UiThread
@@ -42,6 +48,11 @@ public class TabletFragment extends Fragment implements AbstractFragment {
         onModelChanged();
     }
 
+    /**
+     * called when the model changes
+     */
     @Override
-    public void onModelChanged() {  }
+    public void onModelChanged() {
+        //nothing to do
+    }
 }

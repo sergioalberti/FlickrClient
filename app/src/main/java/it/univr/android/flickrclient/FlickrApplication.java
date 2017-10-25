@@ -5,10 +5,10 @@ import android.app.Application;
 import it.univr.android.flickrclient.controller.Controller;
 import it.univr.android.flickrclient.model.Model;
 
-/**
- * Created by user on 5/16/17.
- */
 
+/**
+ * instantiate a new FlickrClient's instance
+ */
 public class FlickrApplication extends Application {
     private MVC mvc;
 
@@ -18,6 +18,9 @@ public class FlickrApplication extends Application {
         mvc = new MVC(new Model(), new Controller());
     }
 
+    /**
+     * @return the current MVC pattern's instance
+     */
     public MVC getMvc(){
         return mvc;
     }

@@ -37,16 +37,28 @@ import it.univr.android.flickrclient.model.Model;
 import static android.support.v4.content.FileProvider.getUriForFile;
 import static it.univr.android.flickrclient.view.SearchFragment.SHARE;
 
+/**
+ * a fragment that shows fullsize image
+ */
 public class ImageFragment extends Fragment implements AbstractFragment {
     private MVC mvc;
     private FlickrImage image;
     private ImageView iv;
     private ListView lv;
 
+    /**
+     * says the interval in ms that an animation lasts
+     */
     public static final int ANIMATION_DURATION = 150;
 
+    /**
+     * says the ImageFragment class' name
+     */
     public final static String TAG = ImageFragment.class.getName();
 
+    /**
+     * initializes the ImageFragment instance
+     */
     public ImageFragment(){
     }
 
@@ -76,7 +88,6 @@ public class ImageFragment extends Fragment implements AbstractFragment {
 
             File newFile = new File(imagePath, "image_" + image.getTitle().hashCode() + ".jpg");
 
-            // downloading image
             image.share();
             image.setAbsoluteURL(newFile.getAbsolutePath());
 
@@ -122,6 +133,9 @@ public class ImageFragment extends Fragment implements AbstractFragment {
         onModelChanged();
     }
 
+    /**
+     * called when the model changes
+     */
     @Override
     public void onModelChanged() {
         // checking whenever call to this method was invoked to show share intent
@@ -129,12 +143,10 @@ public class ImageFragment extends Fragment implements AbstractFragment {
         FlickrImage selectedImage = mvc.model.getShared();
 
         // getDrawable method on ImageView tells whenever the Bitmap is yet set or not. If it's set,
-        // it's not set another time (since several calls to onModelChanged are permitted
+        // it's not set another time (since several calls to onModelChanged are permitted)
 
         if (image != null && image.getBitmap(Model.UrlType.FULLSIZE) != null && iv.getDrawable() == null) {
             iv.setImageBitmap(image.getBitmap(Model.UrlType.FULLSIZE));
-
-            // some animations are used when image appears for the fist time
 
             ObjectAnimator.ofFloat(iv, "alpha", 0f, 1f).setDuration(ANIMATION_DURATION).start();
             ObjectAnimator.ofFloat(iv, "scaleX", 0.9f, 1f).setDuration(ANIMATION_DURATION).start();

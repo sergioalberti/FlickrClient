@@ -1,8 +1,5 @@
 package it.univr.android.flickrclient.view;
 
-/**
- * Created by user on 5/16/17.
- */
 
 import android.app.Activity;
 import android.app.FragmentManager;
@@ -15,12 +12,25 @@ import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
 
+/**
+ * defines layout to be shown on a bigger portable mobile device
+ */
 public class TabletView extends LinearLayout implements View {
     private MVC mvc;
 
+    /**
+     * creates a TabletView's instance
+     * @param context the application's context
+     */
     public TabletView(Context context) { super(context); }
 
+    /**
+     * creates a PhoneView's instance
+     * @param context the application's context
+     * @param attrs the application's attributes
+     */
     public TabletView(Context context, AttributeSet attrs) { super(context, attrs);  }
+
     private FragmentManager getFragmentManager(){
         return ((Activity) getContext()).getFragmentManager();
     }
@@ -57,12 +67,18 @@ public class TabletView extends LinearLayout implements View {
         super.onDetachedFromWindow();
     }
 
+    /**
+     * called when the model changes
+     */
     @Override
     public void onModelChanged() {
         getMainFragment().onModelChanged();
         getSearchFragment().onModelChanged();
     }
 
+    /**
+     * adds a SearchFragment to the stack to perform a search operation
+     */
     public void showSearchResults(){
         getFragmentManager()
                 .beginTransaction()
@@ -72,6 +88,9 @@ public class TabletView extends LinearLayout implements View {
                 .commit();
     }
 
+    /**
+     * adds an ImageFragment to the stack to show an image when is requested from a SearchFragment
+     */
     public void showFullImage(){
         getFragmentManager()
                 .beginTransaction()
@@ -81,5 +100,5 @@ public class TabletView extends LinearLayout implements View {
                 .commit();
     }
 
-    public void clearPreviousSearch() { }
+
 }

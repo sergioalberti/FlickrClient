@@ -1,10 +1,9 @@
 package it.univr.android.flickrclient.view;
 
-/**
- * Created by user on 5/16/17.
- */
 
+import android.app.AlertDialog;
 import android.app.ListFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -35,20 +34,32 @@ import it.univr.android.flickrclient.model.Model;
 
 import static android.support.v4.content.FileProvider.getUriForFile;
 
+/**
+ * a fragment used to show search's results
+ */
 public class SearchFragment extends ListFragment implements AbstractFragment {
     private MVC mvc;
     private SearchAdapter searchAdapter = null;
+    private boolean dialogIsShowing = false;
 
-    private static final String SEARCH_BY_AUTHOR = "Altre immagini di  ";;
+    /**
+     * a String used in menu (local)
+     */
+    public static final String SEARCH_BY_AUTHOR = "Altre immagini di  ";;
 
-    // following field is public - it's even used in ImageFragment to use the same share intent
-
+    /**
+     * a String used in menu (local)
+     */
     public static final String SHARE = "Condividi";
 
-    // the TAG is used to point to the fragment from ImageFragment to use the same share intent
-
+    /**
+     * says the SearchFragment class' name
+     */
     public final static String TAG = SearchFragment.class.getName();
 
+    /**
+     * initializes the SearchFragment instance
+     */
     public SearchFragment() { }
 
     private class SearchAdapter extends ArrayAdapter<FlickrImage> {
@@ -61,6 +72,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
         public void updateSearchResults(){
             imagesList = mvc.model.getSearchResults();
+
         }
 
         @Override
@@ -134,26 +146,10 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        // a very strange behaviour may happen: the screen is rotated while an image is open in
-        // ImageFragment, after, this invocation is done. Thus mvc pointer is not updated and we
-        // need to update it manually (since it is updated only on the current fragment)
-
-        if (mvc == null)
-            mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
 
         AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 
-        // this trick is used to know whether the invocations comes from search or image fragment
-
-        FlickrImage selectedImage;
-        if (acmi != null)
-            // the invocation comes from search fragment through context menu
-
-            selectedImage = (FlickrImage)getListView().getItemAtPosition(acmi.position);
-        else
-            // the invocation comes from image fragment through action menu
-
-            selectedImage = mvc.model.getEnabled();
+        FlickrImage selectedImage = (FlickrImage)getListView().getItemAtPosition(acmi.position);
 
         if (item.getTitle().equals(SHARE)){
             File imagePath = new File(getActivity().getFilesDir(), "images");
@@ -171,14 +167,12 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
             onModelChanged();
 
-            // the view will save downloaded bitmap and show the share intent once the download is
+            // the model will save downloaded bitmap and show the share intent once the download is
             // finished. If the image was just downloaded, the method will not download it from
             // sketch
         } else {
             // saving previous search session
             mvc.model.backup();
-
-            mvc.controller.clearPreviousSearch();
 
             mvc.controller.callSearchService(getActivity(), mvc.controller.SEARCH_BY_AUTHOR, selectedImage.getAuthor());
 
@@ -213,6 +207,9 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         });
     }
 
+    /**
+     * called when the model changes
+     */
     @Override @UiThread
     public void onModelChanged() {
         // checking whenever call to this method was invoked to show share intent
@@ -227,7 +224,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
             final List<FlickrImage> fiList = mvc.model.getSearchResults();
 
-            if(fiList != null){
+            if(fiList != null && fiList.size() > 0){
                 if(searchAdapter == null) {
                     searchAdapter = new SearchAdapter(fiList);
                     setListAdapter(searchAdapter);
@@ -237,10 +234,30 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                     searchAdapter.updateSearchResults();
                     searchAdapter.notifyDataSetChanged();
                 }
-            }
-            else{
+            }else{
+
                 if(searchAdapter != null)
                     searchAdapter.clear();
+
+                if (!dialogIsShowing && fiList != null && fiList.size() == 0) {
+                    setListShown(true); //removes loading spinner and shows the list
+
+                    dialogIsShowing = true;
+                    AlertDialog.Builder builder;
+                    builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Invalid key")
+                            .setMessage("No data found for searched key!")
+                            .setIcon(R.drawable.info_dark)
+                            .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // returning to the caller, no data found for the key
+
+                                    getActivity().getFragmentManager().popBackStack();
+                                }
+                            })
+                            .setCancelable(false)
+                            .show();
+                }
             }
         }
         // showing share intent
@@ -270,14 +287,6 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             } catch (Exception e) {
                 Log.d("ShareBitmap", "error " + e.getMessage());
             }
-        }
-    }
-
-    @UiThread
-    public void clearAdapter(){
-        if(searchAdapter != null) {
-            searchAdapter.clear();
-            searchAdapter = null;
         }
     }
 }

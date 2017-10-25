@@ -30,6 +30,9 @@ import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
 import it.univr.android.flickrclient.view.View;
 
+/**
+ * Use to manipulate data through the model
+ */
 public class Controller {
     private final String TAG = Controller.class.getName();
     private MVC mvc;
@@ -41,16 +44,33 @@ public class Controller {
     public static final String SEARCH_BY_AUTHOR = "Author";
     public static final String SEARCH_COMMENTS = "Comments";
 
-
+    /**
+     * the method is used to set the current model's MVC instance
+     * @param mvc the mvc instance to be set in the current controller
+     */
     @UiThread
     public void setMVC(MVC mvc){
         this.mvc = mvc;
     }
 
+    /**
+     * invoked when a new search is required (a search from previous search happens
+     * only if the user make a search by author from a current search)
+     * @param context points to the application's context
+     * @param searchType the model permits many types of search. Thus a type has to be specified:
+     *                   # SEARCH_BY_KEY stores to model images given a specific string
+     *                   # SEARCH_MOST_POPULAR stores t.m. a collection of the most popular images
+     *                   # SEARCH_LAST_UPLOADS s.t.m. a collection of the last uploaded images
+     *                   # SEARCH_BY_AUTHOR s.t.m. a collection of the last uploaded images given an
+     *                     author
+     *                   # SEARCH_COMMENTS s.t.m. a collection of comments (instances of class Comment)
+     *                     to be shown when an ImageFragment is shown to the used
+     * @param data depending on the searchType specified ahead, few addintional data may be required.
+     *             Those can be specified with respect to the required format through the current field
+     */
     @UiThread
     public void callSearchService(Context context, String searchType, String data){
-        // if this method is invoked, a new search is required (a search from previous search happens
-        // only if the user make a search by author from a current search). Thus the model has to be
+        // a new search is performed, thus the model has to be
         // hard reset by purgeModel invocation that clears even oldImageList
 
         if (searchType.equals(SEARCH_BY_AUTHOR))
@@ -61,25 +81,55 @@ public class Controller {
         SearchService.doFlickrSearch(context, searchType, data);
     }
 
+    /**
+     * invoked when a download to the data in the model is required (i.e. when a bitmap download has
+     * to be performed).
+     * To be called from the UIThread.
+     * @param context points to the application's context
+     * @param image the image on which a download operation has to be performed
+     * @param ut there are two types of downloads performable on an image in this model:
+     *           # THUMB performs a download of the bitmap stream that represents the image's thumbnail
+     *           # FULL_SIZE performs a download of the whole image as a bitmap stream
+     */
     @UiThread
     public void callDownloadService(Context context, FlickrImage image, Model.UrlType ut){
-        DownloadService.doDownload(context, image);
+        DownloadService.doDownload(context, image, ut);
     }
 
-
-    // some overloads to let the invocation working through different models with no additional
-    // operations (i.e. ArrayList casting from single object)
-
+    /**
+     * an overload to let the invocation callDownloadTask(String) working
+     * through different models with no additional operations (i.e. ArrayList casting from single object).
+     * to be called from the WorkerThread
+     * @param url the image in this overload is get through its URL address
+     */
     @WorkerThread
     public void callDownloadTask(String url) {
         callDownloadTask(mvc.model.getImage(url), Model.UrlType.FULLSIZE);
     }
 
+    /**
+     * an overload to let the invocation callDownloadTask(FlickrImage, UrlType) working
+     * through different models with no additional operations (i.e. ArrayList casting from single object).
+     * to be called from the WorkerThread
+     * @param image the image which requires to download a bitmap
+     * @param ut there are two types of downloads performable on an image in this model:
+     *           # THUMB performs a download of the bitmap stream that represents the image's thumbnail
+     *           # FULL_SIZE performs a download of the whole image as a bitmap stream
+     */
     @WorkerThread
     public void callDownloadTask(FlickrImage image, Model.UrlType ut){
         callDownloadTask(new ArrayList<FlickrImage>(Collections.singletonList(image)), ut);
     }
 
+    /**
+     * an overload to let the invocation callDownloadTask(ArrayList<FlickrImage>, UrlType) working
+     * through different models with no additional operations (i.e. ArrayList casting from single object).
+     * to be called from the WorkerThread
+     * @param images the images' collection which requires to download a bitmap
+     * @param ut there are two types of downloads performable on an image in this model:
+     *           # THUMB performs a download of the bitmap stream that represents the image's thumbnail
+     *           # FULL_SIZE performs a download of the whole image as a bitmap stream
+     */
     @WorkerThread
     public void callDownloadTask(ArrayList<FlickrImage> images, Model.UrlType ut) {
         executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -111,7 +161,9 @@ public class Controller {
     }
 
 
-
+    /**
+     * ends all working tasks, disposes the executor
+     */
     @WorkerThread
     public void killWorkingTasks(){
         if(executor != null) {
@@ -120,19 +172,17 @@ public class Controller {
         }
     }
 
+    /**
+     * wakes all the views allowing to show search results
+     */
     @UiThread
     public void showSearchResults(){ mvc.forEachView(View::showSearchResults); }
 
-    @UiThread
-    public void clearPreviousSearch(){
-        mvc.forEachView(View::clearPreviousSearch);
-    }
-
+    /**
+     * wakes all the views allowing to show the full size image
+     */
     @UiThread
     public void showFullImage(){ mvc.forEachView(View::showFullImage); }
-
-    // changed ThumbTask to DownloadTask due to conformity with both thumb size images and original
-    // images that have to be downloaded
 
     private class DownloadTask implements Callable<FlickrImage> {
         private final FlickrImage image;

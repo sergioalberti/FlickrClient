@@ -1,13 +1,16 @@
 package it.univr.android.flickrclient.view;
 
-/**
- * Created by user on 5/16/17.
- */
-
 import android.support.annotation.UiThread;
 
+/**
+ * an abstract representation of a fragment
+ */
 public interface AbstractFragment {
 
+    /**
+     * called when the model is changed.
+     * has to be called from the UIThread.
+     */
     @UiThread
     void onModelChanged();
 }

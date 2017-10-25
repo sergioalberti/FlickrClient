@@ -5,10 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="it.univr.android.flickrclient.view.MainActivity" >
-
-    <!-- TabletView è un linearlayout quindi ci aggiungo
-    i due frame che voglio vengano mostrati contemporaneamente
-    sul tablet e seleziono orientation horizontal -->
+    
     <it.univr.android.flickrclient.view.TabletView
         android:id="@+id/tablet_view"
         android:layout_height="match_parent"

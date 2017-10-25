@@ -1,8 +1,11 @@
 <resources>
     <string name="app_name">FlickrClient</string>
     <string name="search_key_hint">insert search key</string>
-    <string name="button_search">search</string>
     <string name="search_main_text">Search by:</string>
+    <string name="search_button">Search</string>
+    <string name="search_method">Select a search method</string>
+    <string name="share">Share</string>
+    <string name="about">About</string>
     <string-array name="search_options">
         <item>Last Uploads</item>
         <item>Most Popular</item>

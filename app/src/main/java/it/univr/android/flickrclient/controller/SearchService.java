@@ -35,7 +35,11 @@ import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.model.Comment;
 import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
+import it.univr.android.flickrclient.view.View;
 
+/**
+ * permits to call an intent, when a new search is required by the user
+ */
 public class SearchService extends IntentService {
     private static final String ACTION_FLICKR_SEARCH = "search";
     private static final String SAVED_TYPE = "search_type";
@@ -44,10 +48,27 @@ public class SearchService extends IntentService {
     private MVC mvc;
 
 
+    /**
+     * initialize the current search service instance
+     */
     public SearchService(){
         super("search service");
     }
 
+    /**
+     * starts a SearchService's intent
+     * @param context the current application's context
+     * @param searchType the model permits many types of search. Thus a type has to be specified:
+     *                   # SEARCH_BY_KEY stores to model images given a specific string
+     *                   # SEARCH_MOST_POPULAR stores t.m. a collection of the most popular images
+     *                   # SEARCH_LAST_UPLOADS s.t.m. a collection of the last uploaded images
+     *                   # SEARCH_BY_AUTHOR s.t.m. a collection of the last uploaded images given an
+     *                     author
+     *                   # SEARCH_COMMENTS s.t.m. a collection of comments (instances of class Comment)
+     *                     to be shown when an ImageFragment is shown to the used
+     * @param data depending on the searchType specified ahead, few addintional data may be required.
+     *             Those can be specified with respect to the required format through the current field
+     */
     static void doFlickrSearch(Context context, String searchType, String data){
         Intent intent = new Intent(context, SearchService.class);
         intent.setAction(ACTION_FLICKR_SEARCH);
@@ -70,7 +91,13 @@ public class SearchService extends IntentService {
                     ArrayList<FlickrImage> result = (ArrayList<FlickrImage>) flickrSearch(searchType, data);
                     mvc.model.store(result);
                     mvc.controller.killWorkingTasks();
-                    mvc.controller.callDownloadTask(result, Model.UrlType.THUMB);
+
+                    // a new intent is not invoked since here we're in another intent, thus is senseless
+
+                    if (result != null && result.size() > 0)
+                        mvc.controller.callDownloadTask(result, Model.UrlType.THUMB);
+                    else
+                        mvc.forEachView(View::onModelChanged);
                 } else {
                     ArrayList<Comment> result = (ArrayList<Comment>) flickrSearch(searchType, data);
 
@@ -200,6 +227,8 @@ public class SearchService extends IntentService {
             e.printStackTrace();
         }
 
-        return null;
+        // returns an empty list. This may happens when the search has not produced any results
+
+        return new ArrayList<>();
     }
 }

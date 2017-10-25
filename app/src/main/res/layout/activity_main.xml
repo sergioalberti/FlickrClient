@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     tools:context="it.univr.android.flickrclient.view.MainActivity" >
 
-    <!-- PhoneView e' un framelayout quindi posso NON aggiungere altro -->
     <it.univr.android.flickrclient.view.PhoneView
         android:id="@+id/phone_view"
         android:layout_height="match_parent"

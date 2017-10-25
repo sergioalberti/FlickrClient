@@ -1,15 +1,13 @@
 package it.univr.android.flickrclient.view;
 
-/**
- * Created by user on 5/16/17.
- */
-
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,20 +18,30 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
+
+import com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner;
 
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
 
+/**
+ * the main fragment used as entry point
+ */
 public class MainFragment extends Fragment implements AbstractFragment {
     private MVC mvc;
     private EditText searchKey;
     private Button searchButton;
-    private Spinner searchSpinner;
+    private MaterialBetterSpinner searchSpinner;
 
+    /**
+     * says the MainFragment class' name
+     */
     public final static String TAG = MainFragment.class.getName();
 
+    /**
+     * initializes the MainFragment instance
+     */
     public MainFragment(){
     }
 
@@ -47,14 +55,13 @@ public class MainFragment extends Fragment implements AbstractFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         searchKey = (EditText) view.findViewById(R.id.editSearch);
-        searchSpinner = (Spinner) view.findViewById(R.id.search_spinner);
+        searchSpinner = (MaterialBetterSpinner) view.findViewById(R.id.search_spinner);
         searchButton = (Button) view.findViewById(R.id.buttonSearch);
 
         searchKey.setVisibility(View.INVISIBLE);
 
         ArrayAdapter<CharSequence> spinnerAdapter =
-                ArrayAdapter.createFromResource(view.getContext(), R.array.search_options, android.R.layout.simple_spinner_item);
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                ArrayAdapter.createFromResource(view.getContext(), R.array.search_options, R.layout.spinner_layout);
         searchSpinner.setAdapter(spinnerAdapter);
 
         searchButton.setOnClickListener(__ -> {
@@ -63,13 +70,9 @@ public class MainFragment extends Fragment implements AbstractFragment {
             FragmentManager fm = getFragmentManager();
             fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
-            // the old model is cleared
-
-            mvc.controller.clearPreviousSearch();
-
             // a new search is made
 
-            String selectedOption = searchSpinner.getSelectedItem().toString();
+            String selectedOption = searchSpinner.getText().toString();
 
             if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY))
                 mvc.controller.callSearchService(getActivity(), selectedOption, searchKey.getText().toString());
@@ -79,18 +82,23 @@ public class MainFragment extends Fragment implements AbstractFragment {
             mvc.controller.showSearchResults();
         });
 
-        searchSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        searchSpinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(parent.getItemAtPosition(position).toString().equals(mvc.controller.SEARCH_BY_KEY))
-                    searchKey.setVisibility(View.VISIBLE);
-                else
-                    searchKey.setVisibility(View.INVISIBLE);
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                onModelChanged();
             }
+        });
+
+        searchKey.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) { }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                //nothing to do
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                onModelChanged();
             }
         });
 
@@ -109,9 +117,21 @@ public class MainFragment extends Fragment implements AbstractFragment {
         onModelChanged();
     }
 
+    /**
+     * called when the model changes
+     */
     @Override
     public void onModelChanged() {
-        //nothing to do
+        if(!searchSpinner.getText().toString().equals(""))
+            searchButton.setEnabled(true);
+
+        if(searchSpinner.getText().toString().equals(mvc.controller.SEARCH_BY_KEY))
+            searchKey.setVisibility(View.VISIBLE);
+        else
+            searchKey.setVisibility(View.INVISIBLE);
+
+        if(searchSpinner.getText().toString().equals(mvc.controller.SEARCH_BY_KEY) && searchKey.getText().toString().equals(""))
+            searchButton.setEnabled(false);
     }
 
     @Override

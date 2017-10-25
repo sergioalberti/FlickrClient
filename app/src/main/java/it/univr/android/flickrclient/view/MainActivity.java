@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 
 import it.univr.android.flickrclient.R;
 
+/**
+ * application's entry point
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override

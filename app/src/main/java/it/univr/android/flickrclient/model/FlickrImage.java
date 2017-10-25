@@ -1,15 +1,14 @@
 package it.univr.android.flickrclient.model;
 
 import android.graphics.Bitmap;
-import android.os.Parcel;
-import android.os.Parcelable;
 
 import java.util.ArrayList;
 
+
 /**
- * Created by user on 7/11/17.
+ * stores the data about an image
  */
-public class FlickrImage implements Parcelable {
+public class FlickrImage {
     private final String title;
     private final String author;
     private final String id;
@@ -23,6 +22,15 @@ public class FlickrImage implements Parcelable {
     private boolean isShared = false;
     private ArrayList<Comment> comments = null;
 
+    /**
+     * creates an image
+     * @param title the image's title
+     * @param author the author's username
+     * @param id the image's id
+     * @param imageURL the fullsize image's URL
+     * @param thumbURL the thumbnail's URL
+     * @param authorName the author's name
+     */
     public FlickrImage(String title, String author, String id, String imageURL, String thumbURL, String authorName) {
         this.title = title;
         this.author = author;
@@ -33,81 +41,127 @@ public class FlickrImage implements Parcelable {
         this.absoluteURL = "";
     }
 
-    protected FlickrImage(Parcel in) {
-        title = in.readString();
-        author = in.readString();
-        id = in.readString();
-        imageURL = in.readString();
-        thumbURL = in.readString();
-        authorName = in.readString();
-        absoluteURL = in.readString();
-        thumbBitmap = in.readParcelable(Bitmap.class.getClassLoader());
-        fullSizeBitmap = in.readParcelable(Bitmap.class.getClassLoader());
-        isEnabled = in.readByte() != 0;
-        isShared = in.readByte() != 0;
-        comments = in.readParcelable(ArrayList.class.getClassLoader());
-    }
-
+    /**
+     * shows whenever the current image instance is enabled
+     * i.e. whenever an image is selected by the user
+     * @return a boolean showing if image is enabled
+     */
     public boolean isEnbled() {
         return isEnabled;
     }
 
+    /**
+     * shows whenever the current image instance is shared
+     * i.e. whenever an image is required to be shared by the user
+     * @return a boolean showing if image is required to be shared
+     */
     public boolean isShared() {
         return isShared;
     }
 
+    /**
+     * enables an image
+     * i.e. whenever an image is selected by the user
+     */
     public void enable() {
         isEnabled = true;
     }
 
+    /**
+     * flags an image as to be shared
+     */
     public void share() {
         isShared = true;
     }
 
+    /**
+     * disables an image
+     */
     public void disable() { isEnabled = false; }
 
+    /**
+     * unflags an image as shared
+     */
     public void unshare() { isShared = false; }
 
+
+    /**
+     * @return the image's title
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * @return the author's username
+     */
     public String getAuthor() {
         return author;
     }
 
+    /**
+     * @return the image's id
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * @return the author's name
+     */
     public String getAuthorName() {
         return authorName;
     }
 
+    /**
+     * if a user requires the current instance to be shared, this field is used
+     * to store the image locally in the physical storage space on the device
+     * @return the path to the physical storage on the device
+     */
     public String getAbsoluteURL() {
         return absoluteURL;
     }
 
+    /**
+     * @return the fullsize image's URL
+     */
     public String getImageURL() {
         return imageURL;
     }
 
+    /**
+     * @return the thumbnail's URL
+     */
     public String getThumbURL() {
         return thumbURL;
     }
 
+    /**
+     * transform the current instance state to a String
+     * @return a String representing the current instance state
+     */
     public String toString() {
         return imageURL;
     }
 
+    /**
+     * adds a collection of comments to the current instance
+     * @param comments a collection of comments
+     */
     public void setComments(ArrayList<Comment> comments) { this.comments = comments; }
 
+    /**
+     * @return the collection of comments of the current instance
+     */
     public ArrayList<Comment> getComments() { return comments; }
 
 
-
-    // changed getThumbBitmap in getBitmap to ensure conformity with two size images model (one
-    // used to thumbs, other to full size images)
+    /**
+     * @param ut there are two types of downloads performable on an image in this model:
+     *           # THUMB performs a download of the bitmap stream that represents the image's thumbnail
+     *           # FULL_SIZE performs a download of the whole image as a bitmap stream
+     * @return the required Bitmap
+     */
     public Bitmap getBitmap(Model.UrlType ut) {
         if (ut == Model.UrlType.FULLSIZE)
             return fullSizeBitmap;
@@ -115,6 +169,13 @@ public class FlickrImage implements Parcelable {
             return thumbBitmap;
     }
 
+    /**
+     * @param b the Bitmap to be set
+     * @param ut there are two types of downloads performable on an image in this model:
+     *           # THUMB performs a download of the bitmap stream that represents the image's thumbnail
+     *           # FULL_SIZE performs a download of the whole image as a bitmap stream
+     * @return the modified instance
+     */
     public FlickrImage setBitmap(Bitmap b, Model.UrlType ut) {
         if (ut == Model.UrlType.FULLSIZE)
             this.fullSizeBitmap = b;
@@ -123,43 +184,20 @@ public class FlickrImage implements Parcelable {
         return this;
     }
 
+    /**
+     * sets the instance's physical path on the device whenever an image is required to be shared
+     * @param absoluteURL the physical path
+     */
     public void setAbsoluteURL(String absoluteURL) {
         this.absoluteURL = absoluteURL;
     }
 
+    /**
+     * evaluates if two instance points to same data
+     * @param other the other instance
+     * @return says if two instance points to the same data
+     */
     public boolean equals(FlickrImage other) {
         return this.id.equals(other.id);
     }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(title);
-        dest.writeString(author);
-        dest.writeString(imageURL);
-        dest.writeString(thumbURL);
-        dest.writeString(authorName);
-        dest.writeString(absoluteURL);
-        dest.writeValue(thumbBitmap);
-        dest.writeValue(fullSizeBitmap);
-        dest.writeByte((byte) (isEnabled ? 1 : 0));
-        dest.writeByte((byte) (isShared ? 1 : 0));
-        dest.writeValue(comments);
-    }
-
-    public static final Creator<FlickrImage> CREATOR = new Creator<FlickrImage>() {
-        @Override
-        public FlickrImage createFromParcel(Parcel in) {
-            return new FlickrImage(in);
-        }
-
-        @Override
-        public FlickrImage[] newArray(int size) {
-            return new FlickrImage[size];
-        }
-    };
 }

@@ -1,9 +1,5 @@
 package it.univr.android.flickrclient.view;
 
-/**
- * Created by user on 5/16/17.
- */
-
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -15,13 +11,25 @@ import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
 
+/**
+ * defines layout to be shown on a smaller portable mobile device
+ */
 public class PhoneView extends FrameLayout implements View {
     private MVC mvc;
 
+    /**
+     * creates a PhoneView's instance
+     * @param context the application's context
+     */
     public PhoneView(Context context) {
         super(context);
     }
 
+    /**
+     * creates a PhoneView's instance
+     * @param context the application's context
+     * @param attrs the application's attributes
+     */
     public PhoneView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -54,11 +62,17 @@ public class PhoneView extends FrameLayout implements View {
         super.onDetachedFromWindow();
     }
 
+    /**
+     * called when the model changes
+     */
     @Override
     public void onModelChanged() {
         getFragment().onModelChanged();
     }
 
+    /**
+     * adds a SearchFragment to the stack to perform a search operation
+     */
     public void showSearchResults(){
         //transaction to SearchFragment to show results
         getFragmentManager()
@@ -69,6 +83,9 @@ public class PhoneView extends FrameLayout implements View {
                 .commit();
     }
 
+    /**
+     * adds an ImageFragment to the stack to show an image when is requested from a SearchFragment
+     */
     public void showFullImage(){
         getFragmentManager()
                 .beginTransaction()
@@ -78,9 +95,5 @@ public class PhoneView extends FrameLayout implements View {
                 .commit();
     }
 
-    public void clearPreviousSearch(){
-        //nothing to do
-        //previous search is not shown when this
-        //method is called
-    }
+
 }
