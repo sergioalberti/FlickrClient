@@ -43,16 +43,6 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
     private boolean dialogIsShowing = false;
 
     /**
-     * a String used in menu (local)
-     */
-    public static final String SEARCH_BY_AUTHOR = "Altre immagini di  ";;
-
-    /**
-     * a String used in menu (local)
-     */
-    public static final String SHARE = "Condividi";
-
-    /**
      * says the SearchFragment class' name
      */
     public final static String TAG = SearchFragment.class.getName();
@@ -97,7 +87,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             else
                iv.setImageResource(R.drawable.preview);
 
-            tv.setText(position + 1 + ": " + image.getTitle());
+            tv.setText(image.getTitle());
             return convertView;
         }
     }
@@ -134,14 +124,14 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         FlickrImage selectedImage = (FlickrImage)getListView().getItemAtPosition(acmi.position);
 
         menu.setHeaderTitle(selectedImage.getTitle());
-        menu.add(SHARE);
+        menu.add(getString(R.string.share));
 
         // first we check whenever this search is a search by author (by checking if the AuthorName
         // is null - see the model's implementation), if so, another search by author is senseless
         // so we omit "search by author" menu voice
 
         if (selectedImage.getAuthorName() != null)
-            menu.add(SEARCH_BY_AUTHOR + selectedImage.getAuthorName());
+            menu.add(getString(R.string.other_images) + " " + selectedImage.getAuthorName());
     }
 
     @Override
@@ -151,7 +141,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
         FlickrImage selectedImage = (FlickrImage)getListView().getItemAtPosition(acmi.position);
 
-        if (item.getTitle().equals(SHARE)){
+        if (item.getTitle().equals(getString(R.string.share))){
             File imagePath = new File(getActivity().getFilesDir(), "images");
 
             if (!imagePath.exists())
@@ -245,8 +235,8 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                     dialogIsShowing = true;
                     AlertDialog.Builder builder;
                     builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle("Invalid key")
-                            .setMessage("No data found for searched key!")
+                    builder.setTitle(getString(R.string.no_results))
+                            .setMessage(getString(R.string.no_results_message))
                             .setIcon(R.drawable.info_dark)
                             .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
@@ -268,7 +258,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
             try {
                 File newFile = new File(selectedImage.getAbsoluteURL());
-                Uri contentUri = getUriForFile(getActivity(), "it.univr.android.flickrclient", newFile);
+                Uri contentUri = getUriForFile(getActivity(), getActivity().getApplicationContext().getPackageName(), newFile);
 
                 FileOutputStream os = new FileOutputStream(newFile);
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -280,7 +270,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                 intent.setAction(Intent.ACTION_SEND);
                 intent.setType("image/*");
                 intent.putExtra(Intent.EXTRA_STREAM, contentUri);
-                startActivity(Intent.createChooser(intent, SHARE));
+                startActivity(Intent.createChooser(intent, getString(R.string.share)));
 
                 selectedImage.unshare();
 

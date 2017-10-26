@@ -38,11 +38,11 @@ public class Controller {
     private MVC mvc;
     private static ExecutorService executor = null;
 
-    public static final String SEARCH_BY_KEY = "Key";
-    public static final String SEARCH_MOST_POPULAR = "Most Popular";
-    public static final String SEARCH_LAST_UPLOADS = "Last Uploads";
-    public static final String SEARCH_BY_AUTHOR = "Author";
-    public static final String SEARCH_COMMENTS = "Comments";
+    public static final String SEARCH_LAST_UPLOADS = "0";
+    public static final String SEARCH_MOST_POPULAR = "1";
+    public static final String SEARCH_BY_KEY = "2";
+    public static final String SEARCH_BY_AUTHOR = "3";
+    public static final String SEARCH_COMMENTS = "4";
 
     /**
      * the method is used to set the current model's MVC instance

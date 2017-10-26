@@ -104,10 +104,13 @@ public class SearchService extends IntentService {
                     // to update ImageFragment with latest comments, a call to onModelChanged must
                     // by performed (the call is invoked from Model.updateImage)
 
-                    if (result != null) {
+                    if (result != null && result.size() > 0) {
                         FlickrImage image = mvc.model.getImageFromId(data);
-                        image.setComments(result);
-                        mvc.model.updateImage(image);
+
+                        if (image != null) {
+                            image.setComments(result);
+                            mvc.model.updateImage(image);
+                        }
                     }
                 }
 

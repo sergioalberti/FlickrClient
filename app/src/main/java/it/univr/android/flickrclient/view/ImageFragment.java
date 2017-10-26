@@ -35,7 +35,7 @@ import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
 
 import static android.support.v4.content.FileProvider.getUriForFile;
-import static it.univr.android.flickrclient.view.SearchFragment.SHARE;
+
 
 /**
  * a fragment that shows fullsize image
@@ -158,7 +158,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
         else if (selectedImage != null && !selectedImage.getAbsoluteURL().equals("") && selectedImage.getBitmap(Model.UrlType.FULLSIZE) != null) {
             try {
                 File newFile = new File(selectedImage.getAbsoluteURL());
-                Uri contentUri = getUriForFile(getActivity(), "it.univr.android.flickrclient", newFile);
+                Uri contentUri = getUriForFile(getActivity(), getActivity().getApplicationContext().getPackageName(), newFile);
 
                 FileOutputStream os = new FileOutputStream(newFile);
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -170,7 +170,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
                 intent.setAction(Intent.ACTION_SEND);
                 intent.setType("image/*");
                 intent.putExtra(Intent.EXTRA_STREAM, contentUri);
-                startActivity(Intent.createChooser(intent, SHARE));
+                startActivity(Intent.createChooser(intent, getString(R.string.share)));
 
                 selectedImage.unshare();
 

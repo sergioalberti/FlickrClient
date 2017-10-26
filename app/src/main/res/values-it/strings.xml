@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">FlickrClient</string>
+    <string name="search_key_hint">Inserisci chiave di ricerca</string>
+    <string name="search_main_text">Ricerca per:</string>
+    <string name="search_button">Ricerca</string>
+    <string name="search_method">Scegli il metodo di ricerca</string>
+    <string name="share">Condividi</string>
+    <string name="about">Su di noi</string>
+    <string name="about_message">Sergio Alberti, Adam Seewald\nGiugno/Luglio 2017\nversione 1.0</string>
+    <string name="ok">Ok</string>
+    <string name="other_images">Altre immagini di</string>
+    <string name="no_results">Nessun risultato</string>
+    <string name="no_results_message">Nessun dato trovato per la chiave di ricerca!</string>
+
+    <string-array name="search_options">
+        <item>Ultimi caricamenti</item>
+        <item>Più popolari</item>
+        <item>Chiave di ricerca</item>
+    </string-array>
+</resources>

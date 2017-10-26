@@ -21,6 +21,9 @@ import android.widget.EditText;
 
 import com.weiwangcn.betterspinner.library.material.MaterialBetterSpinner;
 
+import java.util.Arrays;
+import java.util.List;
+
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
@@ -33,6 +36,8 @@ public class MainFragment extends Fragment implements AbstractFragment {
     private EditText searchKey;
     private Button searchButton;
     private MaterialBetterSpinner searchSpinner;
+    private String selectedOption = "";
+    private List<String> selectedOptionsComparator;
 
     /**
      * says the MainFragment class' name
@@ -72,8 +77,6 @@ public class MainFragment extends Fragment implements AbstractFragment {
 
             // a new search is made
 
-            String selectedOption = searchSpinner.getText().toString();
-
             if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY))
                 mvc.controller.callSearchService(getActivity(), selectedOption, searchKey.getText().toString());
             else
@@ -85,7 +88,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
         searchSpinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                onModelChanged();
+                updateUI();
             }
         });
 
@@ -98,7 +101,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                onModelChanged();
+                updateUI();
             }
         });
 
@@ -115,22 +118,28 @@ public class MainFragment extends Fragment implements AbstractFragment {
         super.onActivityCreated(savedInstanceState);
         mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
         onModelChanged();
+        updateUI();
     }
 
     /**
      * called when the model changes
      */
     @Override
-    public void onModelChanged() {
-        if(!searchSpinner.getText().toString().equals(""))
-            searchButton.setEnabled(true);
+    public void onModelChanged() {  }
 
-        if(searchSpinner.getText().toString().equals(mvc.controller.SEARCH_BY_KEY))
+    private void updateUI(){
+        if(!searchSpinner.getText().toString().equals("")) {
+            selectedOptionsComparator = Arrays.asList(getResources().getStringArray(R.array.search_options));
+            selectedOption = "" + selectedOptionsComparator.indexOf(searchSpinner.getText().toString());
+            searchButton.setEnabled(true);
+        }
+
+        if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY))
             searchKey.setVisibility(View.VISIBLE);
         else
             searchKey.setVisibility(View.INVISIBLE);
 
-        if(searchSpinner.getText().toString().equals(mvc.controller.SEARCH_BY_KEY) && searchKey.getText().toString().equals(""))
+        if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY) && searchKey.getText().toString().equals(""))
             searchButton.setEnabled(false);
     }
 
@@ -159,11 +168,9 @@ public class MainFragment extends Fragment implements AbstractFragment {
         if (getFragmentManager().findFragmentByTag(SearchFragment.TAG) == null && item.getItemId() == R.id.menu_info) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-            builder.setMessage("Sergio Alberti, Adam Seewald\n" +
-                               "Giugno/Luglio 2017\n" +
-                               "versione 1.0")
-                    .setTitle("About")
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            builder.setMessage(getString(R.string.about_message))
+                    .setTitle(getString(R.string.about))
+                    .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) { }
                     })
                     .setIcon(R.drawable.info_dark);
