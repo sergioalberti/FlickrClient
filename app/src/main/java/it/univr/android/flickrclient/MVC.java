@@ -25,11 +25,7 @@ public class MVC {
      */
     public final Controller controller;
 
-
-    /**
-     * defines a list of views
-     */
-    public final List<View> views = new CopyOnWriteArrayList<View>();
+    private final List<View> views = new CopyOnWriteArrayList<>();
 
     /**
      * builds a new application context
@@ -72,11 +68,7 @@ public class MVC {
      * @param vt the ViewTask to be performed
      */
     public void forEachView(ViewTask vt){
-        new Handler(Looper.getMainLooper()).post(() -> {
-            for (View v : views)
-                vt.process(v);
-
-        });
+        new Handler(Looper.getMainLooper()).post(() -> views.forEach(vt::process));
     }
 
 }

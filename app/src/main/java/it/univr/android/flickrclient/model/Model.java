@@ -1,9 +1,5 @@
 package it.univr.android.flickrclient.model;
 
-/**
- * Created by user on 5/16/17.
- */
-
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 

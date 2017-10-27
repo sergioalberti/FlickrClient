@@ -8,7 +8,6 @@ import android.support.annotation.WorkerThread;
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.model.FlickrImage;
-import it.univr.android.flickrclient.model.Model;
 
 /**
  * permits to call an intent when a new download is required by the user
@@ -28,11 +27,8 @@ public class DownloadService extends IntentService {
      * starts a DownloadService's intent
      * @param context points to the application's context
      * @param image the image on which a download operation has to be performed
-     * @param ut there are two types of downloads performable on an image in this model:
-     *           # THUMB performs a download of the bitmap stream that represents the image's thumbnail
-     *           # FULL_SIZE performs a download of the whole image as a bitmap stream
      */
-    static void doDownload(Context context, FlickrImage image, Model.UrlType ut){
+    static void doDownload(Context context, FlickrImage image){
         Intent intent = new Intent(context, DownloadService.class);
         intent.setAction(ACTION_FLICKR_DOWNLOAD);
         intent.putExtra(SAVED_IMAGE_URL, image.getImageURL());

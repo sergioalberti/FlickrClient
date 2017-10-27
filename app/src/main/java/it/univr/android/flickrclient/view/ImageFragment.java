@@ -2,6 +2,7 @@ package it.univr.android.flickrclient.view;
 
 
 import android.animation.ObjectAnimator;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -46,10 +47,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     private ImageView iv;
     private ListView lv;
 
-    /**
-     * says the interval in ms that an animation lasts
-     */
-    public static final int ANIMATION_DURATION = 150;
+    private static final int ANIMATION_DURATION = 150;
 
     /**
      * says the ImageFragment class' name
@@ -84,14 +82,24 @@ public class ImageFragment extends Fragment implements AbstractFragment {
             File imagePath = new File(getActivity().getFilesDir(), "images");
 
             if (!imagePath.exists())
-                imagePath.mkdir();
+                if (!imagePath.mkdir()) {
+                    AlertDialog.Builder builder;
+                    builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(getString(R.string.no_directory))
+                            .setMessage(getString(R.string.no_directory_message))
+                            .setIcon(R.drawable.info_dark)
+                            .setCancelable(false)
+                            .show();
+
+                    return true;
+                }
 
             File newFile = new File(imagePath, "image_" + image.getTitle().hashCode() + ".jpg");
 
             image.share();
             image.setAbsoluteURL(newFile.getAbsolutePath());
 
-            mvc.controller.callDownloadService(getActivity(), image, Model.UrlType.FULLSIZE);
+            mvc.controller.callDownloadService(getActivity(), image);
             onModelChanged();
 
             return true;
@@ -109,11 +117,6 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     }
 
     @Override @UiThread
-    public void onSaveInstanceState(Bundle outState){
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override @UiThread
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
@@ -127,7 +130,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
 
             // downloading full size image
 
-            mvc.controller.callDownloadService(getActivity(), image, Model.UrlType.FULLSIZE);
+            mvc.controller.callDownloadService(getActivity(), image);
         }
 
         onModelChanged();
@@ -136,6 +139,7 @@ public class ImageFragment extends Fragment implements AbstractFragment {
     /**
      * called when the model changes
      */
+    @SuppressWarnings("deprecation")
     @Override
     public void onModelChanged() {
         // checking whenever call to this method was invoked to show share intent
@@ -182,15 +186,18 @@ public class ImageFragment extends Fragment implements AbstractFragment {
         // showing comments if available on specific image
         if (image != null && image.getComments() != null && lv.getCount() == 0) {
             ArrayList<Comment> comments = image.getComments();
-            ArrayAdapter adapter = new ArrayAdapter(this.getActivity(), android.R.layout.simple_list_item_2, android.R.id.text1, comments) {
+            ArrayAdapter<Comment> adapter = new ArrayAdapter<Comment>(this.getActivity(), android.R.layout.simple_list_item_2, android.R.id.text1, comments) {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent) {
                     View view = super.getView(position, convertView, parent);
                     TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                     TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-
                     text1.setText(comments.get(position).getAuthorName());
-                    text2.setText(Html.fromHtml(comments.get(position).getComment()));
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        text2.setText(Html.fromHtml(comments.get(position).getComment(), Html.FROM_HTML_MODE_LEGACY));
+                    } else {
+                        text2.setText(Html.fromHtml(comments.get(position).getComment()));
+                    }
                     return view;
                 }
             };

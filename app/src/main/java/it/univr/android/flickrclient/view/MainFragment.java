@@ -3,7 +3,6 @@ package it.univr.android.flickrclient.view;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
 import android.text.Editable;
@@ -14,7 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,6 +25,7 @@ import java.util.List;
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
+import it.univr.android.flickrclient.controller.Controller;
 
 /**
  * the main fragment used as entry point
@@ -37,7 +36,6 @@ public class MainFragment extends Fragment implements AbstractFragment {
     private Button searchButton;
     private MaterialBetterSpinner searchSpinner;
     private String selectedOption = "";
-    private List<String> selectedOptionsComparator;
 
     /**
      * says the MainFragment class' name
@@ -77,7 +75,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
 
             // a new search is made
 
-            if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY))
+            if(selectedOption.equals(Controller.SEARCH_BY_KEY))
                 mvc.controller.callSearchService(getActivity(), selectedOption, searchKey.getText().toString());
             else
                 mvc.controller.callSearchService(getActivity(), selectedOption, null);
@@ -85,12 +83,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
             mvc.controller.showSearchResults();
         });
 
-        searchSpinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                updateUI();
-            }
-        });
+        searchSpinner.setOnItemClickListener((adapterView, view1, position, l) -> updateUI());
 
         searchKey.addTextChangedListener(new TextWatcher() {
             @Override
@@ -109,11 +102,6 @@ public class MainFragment extends Fragment implements AbstractFragment {
     }
 
     @Override @UiThread
-    public void onSaveInstanceState(Bundle outState){
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override @UiThread
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mvc = ((FlickrApplication) getActivity().getApplication()).getMvc();
@@ -129,17 +117,17 @@ public class MainFragment extends Fragment implements AbstractFragment {
 
     private void updateUI(){
         if(!searchSpinner.getText().toString().equals("")) {
-            selectedOptionsComparator = Arrays.asList(getResources().getStringArray(R.array.search_options));
+            List<String> selectedOptionsComparator = Arrays.asList(getResources().getStringArray(R.array.search_options));
             selectedOption = "" + selectedOptionsComparator.indexOf(searchSpinner.getText().toString());
             searchButton.setEnabled(true);
         }
 
-        if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY))
+        if(selectedOption.equals(Controller.SEARCH_BY_KEY))
             searchKey.setVisibility(View.VISIBLE);
         else
             searchKey.setVisibility(View.INVISIBLE);
 
-        if(selectedOption.equals(mvc.controller.SEARCH_BY_KEY) && searchKey.getText().toString().equals(""))
+        if(selectedOption.equals(Controller.SEARCH_BY_KEY) && searchKey.getText().toString().equals(""))
             searchButton.setEnabled(false);
     }
 
@@ -170,9 +158,7 @@ public class MainFragment extends Fragment implements AbstractFragment {
 
             builder.setMessage(getString(R.string.about_message))
                     .setTitle(getString(R.string.about))
-                    .setPositiveButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) { }
-                    })
+                    .setPositiveButton(getString(R.string.ok), (dialog, id) -> { })
                     .setIcon(R.drawable.info_dark);
 
             AlertDialog dialog = builder.create();

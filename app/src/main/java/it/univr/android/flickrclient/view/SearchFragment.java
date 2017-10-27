@@ -3,7 +3,6 @@ package it.univr.android.flickrclient.view;
 
 import android.app.AlertDialog;
 import android.app.ListFragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -29,6 +28,7 @@ import java.util.List;
 import it.univr.android.flickrclient.FlickrApplication;
 import it.univr.android.flickrclient.MVC;
 import it.univr.android.flickrclient.R;
+import it.univr.android.flickrclient.controller.Controller;
 import it.univr.android.flickrclient.model.FlickrImage;
 import it.univr.android.flickrclient.model.Model;
 
@@ -87,7 +87,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             else
                iv.setImageResource(R.drawable.preview);
 
-            tv.setText(image.getTitle());
+            tv.setText(image != null ? image.getTitle() : "");
             return convertView;
         }
     }
@@ -99,18 +99,15 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
         onModelChanged();
 
-        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                FlickrImage selectedImage = (FlickrImage)getListView().getItemAtPosition(position);
+        getListView().setOnItemClickListener((parent, view, position, id) -> {
+            FlickrImage selectedImage = (FlickrImage)getListView().getItemAtPosition(position);
 
-                // all images in the local store are disabled, only the selected one is enabled
+            // all images in the local store are disabled, only the selected one is enabled
 
-                mvc.model.reset();
-                selectedImage.enable();
+            mvc.model.reset();
+            selectedImage.enable();
 
-                mvc.controller.showFullImage();
-            }
+            mvc.controller.showFullImage();
         });
 
         registerForContextMenu(this.getListView());
@@ -145,7 +142,17 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             File imagePath = new File(getActivity().getFilesDir(), "images");
 
             if (!imagePath.exists())
-                imagePath.mkdir();
+                if (!imagePath.mkdir()) {
+                    AlertDialog.Builder builder;
+                    builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(getString(R.string.no_directory))
+                            .setMessage(getString(R.string.no_directory_message))
+                            .setIcon(R.drawable.info_dark)
+                            .setCancelable(false)
+                            .show();
+
+                    return true;
+                }
 
             File newFile = new File(imagePath, "image_" + selectedImage.getTitle().hashCode() + ".jpg");
 
@@ -153,7 +160,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             selectedImage.share();
             selectedImage.setAbsoluteURL(newFile.getAbsolutePath());
 
-            mvc.controller.callDownloadService(getActivity(), selectedImage, Model.UrlType.FULLSIZE);
+            mvc.controller.callDownloadService(getActivity(), selectedImage);
 
             onModelChanged();
 
@@ -164,7 +171,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
             // saving previous search session
             mvc.model.backup();
 
-            mvc.controller.callSearchService(getActivity(), mvc.controller.SEARCH_BY_AUTHOR, selectedImage.getAuthor());
+            mvc.controller.callSearchService(getActivity(), Controller.SEARCH_BY_AUTHOR, selectedImage.getAuthor());
 
             mvc.controller.showSearchResults();
         }
@@ -181,19 +188,16 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
 
         getView().setFocusableInTouchMode(true);
         getView().requestFocus();
-        getView().setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
+        getView().setOnKeyListener((v, keyCode, event) -> {
 
-                if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK){
-                    // back button clicked, resuming previous search
+            if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK){
+                // back button clicked, resuming previous search
 
-                    mvc.model.restore();
+                mvc.model.restore();
 
-                    onModelChanged();
-                }
-                return false;
+                onModelChanged();
             }
+            return false;
         });
     }
 
@@ -238,12 +242,10 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
                     builder.setTitle(getString(R.string.no_results))
                             .setMessage(getString(R.string.no_results_message))
                             .setIcon(R.drawable.info_dark)
-                            .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // returning to the caller, no data found for the key
+                            .setNeutralButton(android.R.string.ok, (dialog, which) -> {
+                                // returning to the caller, no data found for the key
 
-                                    getActivity().getFragmentManager().popBackStack();
-                                }
+                                getActivity().getFragmentManager().popBackStack();
                             })
                             .setCancelable(false)
                             .show();
@@ -252,7 +254,7 @@ public class SearchFragment extends ListFragment implements AbstractFragment {
         }
         // showing share intent
 
-        else if (selectedImage != null && !selectedImage.getAbsoluteURL().equals("") && selectedImage.getBitmap(Model.UrlType.FULLSIZE) != null) {
+        else if (!selectedImage.getAbsoluteURL().equals("") && selectedImage.getBitmap(Model.UrlType.FULLSIZE) != null) {
             // since we are here, the onModelChanged was invoked when the DownloadTask has ended
             // to download the full size image after a shared intent invocation attempt
 

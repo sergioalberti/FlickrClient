@@ -5,7 +5,7 @@ import android.support.annotation.UiThread;
 /**
  * an abstract representation of a fragment
  */
-public interface AbstractFragment {
+interface AbstractFragment {
 
     /**
      * called when the model is changed.

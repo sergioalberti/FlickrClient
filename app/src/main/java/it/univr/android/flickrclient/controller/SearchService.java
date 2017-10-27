@@ -1,9 +1,5 @@
 package it.univr.android.flickrclient.controller;
 
-/**
- * Created by user on 5/16/17.
- */
-
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
@@ -45,7 +41,6 @@ public class SearchService extends IntentService {
     private static final String SAVED_TYPE = "search_type";
     private static final String SAVED_ADDITIONAL_DATA = "additional_data";
     private static final String API_KEY = "be4922ffb4ded82d452af0477842bdba";
-    private MVC mvc;
 
 
     /**
@@ -80,7 +75,7 @@ public class SearchService extends IntentService {
 
     @WorkerThread
     protected void onHandleIntent(Intent intent) {
-        mvc = ((FlickrApplication) getApplication()).getMvc();
+        MVC mvc = ((FlickrApplication) getApplication()).getMvc();
 
         switch(intent.getAction()){
             case ACTION_FLICKR_SEARCH:
@@ -124,28 +119,33 @@ public class SearchService extends IntentService {
             String key;
             String CONNECTION_URL;
 
-            if(searchType.equals(Controller.SEARCH_BY_KEY)) {
-                key = URLEncoder.encode(data, "UTF-8");
-                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
-                        "photos.search&api_key=" + API_KEY + "&text=" + key +
-                        "&extras=url_z,url_s,owner_name,&per_page=50";
+            switch (searchType) {
+                case Controller.SEARCH_BY_KEY:
+                    key = URLEncoder.encode(data, "UTF-8");
+                    CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                            "photos.search&api_key=" + API_KEY + "&text=" + key +
+                            "&extras=url_z,url_s,owner_name,&per_page=50";
+                    break;
+                case Controller.SEARCH_LAST_UPLOADS:
+                    CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                            "photos.getRecent&api_key=" + API_KEY + "&extras=url_z,url_s,owner_name," +
+                            "&per_page=50";
+                    break;
+                case Controller.SEARCH_MOST_POPULAR:
+                    CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                            "interestingness.getList&api_key=" + API_KEY + "&extras=url_z,url_s," +
+                            "owner_name,&per_page=50";
+                    break;
+                case Controller.SEARCH_BY_AUTHOR:
+                    CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                            "people.getPublicPhotos&api_key=" + API_KEY + "&user_id=" + data +
+                            "&extras=url_z,url_s,&per_page=50";
+                    break;
+                default:
+                    CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
+                            "photos.comments.getList&api_key=" + API_KEY + "&photo_id=" + data;
+                    break;
             }
-            else if(searchType.equals(Controller.SEARCH_LAST_UPLOADS))
-                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
-                        "photos.getRecent&api_key=" + API_KEY + "&extras=url_z,url_s,owner_name," +
-                        "&per_page=50";
-            else if(searchType.equals(Controller.SEARCH_MOST_POPULAR))
-                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
-                        "interestingness.getList&api_key=" + API_KEY + "&extras=url_z,url_s," +
-                        "owner_name,&per_page=50";
-
-            else if (searchType.equals(Controller.SEARCH_BY_AUTHOR))
-                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
-                        "people.getPublicPhotos&api_key=" + API_KEY + "&user_id=" + data +
-                        "&extras=url_z,url_s,&per_page=50";
-            else
-                CONNECTION_URL = "https://api.flickr.com/services/rest?method=flickr." +
-                        "photos.comments.getList&api_key=" + API_KEY + "&photo_id=" + data;
 
             URL url = new URL(CONNECTION_URL);
             URLConnection conn = url.openConnection();
@@ -156,8 +156,7 @@ public class SearchService extends IntentService {
             while ((line = in.readLine()) != null)
                 xml += line;
 
-            if (in != null)
-                in.close();
+            in.close();
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -205,21 +204,20 @@ public class SearchService extends IntentService {
             } else if (comments.getLength() != 0) {
                 ArrayList<Comment> response = new ArrayList<>();
                 NamedNodeMap nnm;
-                Node author, author_name, datecreate;
+                Node author_name, datecreate;
                 String comment;
                 Date date;
 
                 for (int i = 0; i < comments.getLength(); i++){
                     nnm = comments.item(i).getAttributes();
                     comment = comments.item(i).getTextContent();
-                    author = nnm.getNamedItem("author");
                     author_name = nnm.getNamedItem("authorname");
                     datecreate = nnm.getNamedItem("datecreate");
 
-                    if (author != null && author_name != null && datecreate != null) {
+                    if (author_name != null && datecreate != null) {
                         date = new java.util.Date(Long.parseLong(datecreate.getTextContent()) * 1000);
 
-                        response.add(new Comment(author.getTextContent(), author_name.getTextContent(), comment, date));
+                        response.add(new Comment(author_name.getTextContent(), comment, date));
                     }
                 }
 

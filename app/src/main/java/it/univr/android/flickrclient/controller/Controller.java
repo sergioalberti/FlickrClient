@@ -1,9 +1,5 @@
 package it.univr.android.flickrclient.controller;
 
-/**
- * Created by user on 5/16/17.
- */
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,7 +30,6 @@ import it.univr.android.flickrclient.view.View;
  * Use to manipulate data through the model
  */
 public class Controller {
-    private final String TAG = Controller.class.getName();
     private MVC mvc;
     private static ExecutorService executor = null;
 
@@ -87,13 +82,10 @@ public class Controller {
      * To be called from the UIThread.
      * @param context points to the application's context
      * @param image the image on which a download operation has to be performed
-     * @param ut there are two types of downloads performable on an image in this model:
-     *           # THUMB performs a download of the bitmap stream that represents the image's thumbnail
-     *           # FULL_SIZE performs a download of the whole image as a bitmap stream
      */
     @UiThread
-    public void callDownloadService(Context context, FlickrImage image, Model.UrlType ut){
-        DownloadService.doDownload(context, image, ut);
+    public void callDownloadService(Context context, FlickrImage image){
+        DownloadService.doDownload(context, image);
     }
 
     /**
@@ -104,21 +96,21 @@ public class Controller {
      */
     @WorkerThread
     public void callDownloadTask(String url) {
-        callDownloadTask(mvc.model.getImage(url), Model.UrlType.FULLSIZE);
+        callDownloadTask(mvc.model.getImage(url));
     }
+
+    // the following method was implemented for a possible future adjustment,
+    // whenever the call has to be performed on a single image
 
     /**
      * an overload to let the invocation callDownloadTask(FlickrImage, UrlType) working
      * through different models with no additional operations (i.e. ArrayList casting from single object).
      * to be called from the WorkerThread
      * @param image the image which requires to download a bitmap
-     * @param ut there are two types of downloads performable on an image in this model:
-     *           # THUMB performs a download of the bitmap stream that represents the image's thumbnail
-     *           # FULL_SIZE performs a download of the whole image as a bitmap stream
      */
     @WorkerThread
-    public void callDownloadTask(FlickrImage image, Model.UrlType ut){
-        callDownloadTask(new ArrayList<FlickrImage>(Collections.singletonList(image)), ut);
+    public void callDownloadTask(FlickrImage image){
+        callDownloadTask(new ArrayList<>(Collections.singletonList(image)), Model.UrlType.FULLSIZE);
     }
 
     /**
@@ -206,8 +198,7 @@ public class Controller {
         private Bitmap downloadBitmapUtility(String source) {
             try {
                 if(!executor.isShutdown()) {
-                    String CONNECTION_URL = source;
-                    URL url = new URL(CONNECTION_URL);
+                    URL url = new URL(source);
                     URLConnection connection = url.openConnection();
                     connection.setDoInput(true);
                     connection.connect();
